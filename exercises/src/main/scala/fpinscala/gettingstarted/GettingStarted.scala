@@ -127,7 +127,12 @@ object MonomorphicBinarySearch {
 }
 
 object PolymorphicFunctions {
-
+  def main (args: Array[String]) {
+    val as = Seq(1,2,3,4,5)
+    println(s"$as is sorted? ${isSorted(as.toArray ,(a:Int, b:Int) => a < b)}")
+    println(s"${as.reverse} is sorted? ${isSorted(as.reverse.toArray ,(a:Int, b:Int) => a < b)}")
+    println(s"${List.empty} is sorted? ${isSorted(List.empty[Int].toArray ,(a:Int, b:Int) => a < b)}")
+  }
   // Here's a polymorphic version of `binarySearch`, parameterized on
   // a function for testing whether an `A` is greater than another `A`.
   def binarySearch[A](as: Array[A], key: A, gt: (A,A) => Boolean): Int = {
@@ -149,19 +154,13 @@ object PolymorphicFunctions {
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
   def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
-    if (as.isEmpty) true
-    else {
-      def go(x:A, ar:Array[A], curr:Boolean) : Boolean = {
-        if (ar.isEmpty) curr
-        else {
-          gt(x, ar.head) match {
-            case false => false
-            case _ => go(ar.head, ar.tail, true)
-          }
-        }
-      }
-      go(as.head, as.tail, true)
+    @annotation.tailrec
+    def _isSorted(n:Int):Boolean = {
+      if (n >= as.length - 1) true
+      else if (gt(as(n), as(n + 1))) _isSorted(n+1)
+      else false
     }
+    _isSorted(0)
   }
 
   // Polymorphic functions are often so constrained by their type
