@@ -6,6 +6,10 @@ import org.scalatest.{Matchers, FlatSpec}
  * Created by hyleung on 15-06-08.
  */
 class ListSpec extends FlatSpec with Matchers{
+  behavior of "x"
+  it should "evaluate to expected value (matches on 3rd Case)" in  {
+    List.x should be (3)
+  }
   behavior of "List.tail"
   it should "return tail of list" in {
     val list = List(1,2,3,4)
