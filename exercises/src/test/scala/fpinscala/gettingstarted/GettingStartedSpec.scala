@@ -61,4 +61,13 @@ class GettingStartedSpec extends FlatSpec with Matchers {
 			f(a, b) equals uncurried(a, b)
 		}.check
 	}
+
+	behavior of "compose function"
+	it should "compose two functions" in {
+		val f = (a:Int) => a + 10
+		val g = (b:Int) => b * 10
+		val composed = compose(f, g)
+		composed(10) should be (f(g(10)))
+	}
+
 }
