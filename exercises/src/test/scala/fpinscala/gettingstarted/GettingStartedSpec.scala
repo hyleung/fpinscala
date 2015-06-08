@@ -45,4 +45,20 @@ class GettingStartedSpec extends FlatSpec with Matchers {
 			f(a, b) equals curried(a)(b)
 		}.check
 	}
+
+	behavior of "uncurry function"
+	it should "uncurry a curried function" in {
+		val f = (a: Int, b: Int) => a + b
+		val curried = curry(f)
+		val uncurried = uncurry(curried)
+		f(1, 2) should be (uncurried(1,2))
+	}
+	it should "uncurry a curried function with ScalaCheck" in {
+		val f = (a: Int, b: Int) => a + b
+		val curried = curry(f)
+		val uncurried = uncurry(curried)
+		forAll { (a:Int, b:Int) =>
+			f(a, b) equals uncurried(a, b)
+		}.check
+	}
 }

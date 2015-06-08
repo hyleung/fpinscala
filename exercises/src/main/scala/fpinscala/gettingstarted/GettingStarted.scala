@@ -132,16 +132,6 @@ object MonomorphicBinarySearch {
 }
 
 object PolymorphicFunctions {
-	def main(args: Array[String]) {
-		val as = Seq(1, 2, 3, 4, 5)
-		println(s"$as is sorted? ${isSorted(as.toArray, (a: Int, b: Int) => a < b)}")
-		println(s"${as.reverse} is sorted? ${isSorted(as.reverse.toArray, (a: Int, b: Int) => a < b)}")
-		println(s"${List.empty} is sorted? ${isSorted(List.empty[Int].toArray, (a: Int, b: Int) => a < b)}")
-
-		val c = curry((a: Int, b: Int) => a + b)
-		println(s"curried: ${c(1)(2)}")
-	}
-
 	// Here's a polymorphic version of `binarySearch`, parameterized on
 	// a function for testing whether an `A` is greater than another `A`.
 	def binarySearch[A](as: Array[A], key: A, gt: (A, A) => Boolean): Int = {
@@ -188,9 +178,7 @@ object PolymorphicFunctions {
 	// NB: The `Function2` trait has a `curried` method already
 
 	// Exercise 4: Implement `uncurry`
-	def uncurry[A, B, C](f: A => B => C): (A, B) => C =
-		???
-
+	def uncurry[A, B, C](f: A => B => C): (A, B) => C =  (a:A, b:B) => f(a)(b)
 	/*
 	  NB: There is a method on the `Function` object in the standard library,
 	  `Function.uncurried` that you can use for uncurrying.
