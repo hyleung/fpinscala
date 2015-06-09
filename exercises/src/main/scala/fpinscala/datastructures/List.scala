@@ -52,7 +52,7 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def tail[A](l: List[A]): List[A] = l match {
     case (Cons(h,t)) => t
-    case _ => List()
+    case Nil => List()
   }
 
 
