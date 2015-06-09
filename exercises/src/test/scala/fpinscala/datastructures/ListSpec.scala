@@ -24,9 +24,9 @@ class ListSpec extends FlatSpec with Matchers{
     List.tail(list) should be (List())
   }
   behavior of "list.setHead"
-  it should "set the head for an empty list"  in {
+  it should "error when setting the head for an empty list"  in {
     val list = List()
-    List.setHead(list, 1) should be (List(1))
+    an [Exception] should be thrownBy  List.setHead(list, 1)
   }
   it should "set the head for a list" in {
     val list = List(1,2,3,4)
