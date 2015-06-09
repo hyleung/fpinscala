@@ -37,12 +37,16 @@ class ListSpec extends FlatSpec with Matchers{
     val list  = List(1,2,3,4,5,6,7,8,9,10)
     List.drop(list,5) should be (List(6,7,8,9,10))
   }
-  it should "error when dropping from empty list" in {
+  it should "return empty list when dropping from empty list" in {
     val list  = List()
-    an [Exception] should be thrownBy List.drop(list,5)
+    List.drop(list,5) should be (List())
   }
-  it should "error when dropping from empty list that is smaller than `n`" in {
+  it should "return empty list when dropping from list that is smaller than `n`" in {
     val list  = List(1,2,3,4)
-    an [Exception] should be thrownBy List.drop(list,5)
+    List.drop(list,5) should be (List())
+  }
+  it should "return list if n < 0" in {
+    val list  = List(1,2,3,4)
+    List.drop(list,-1) should be (list)
   }
 }
