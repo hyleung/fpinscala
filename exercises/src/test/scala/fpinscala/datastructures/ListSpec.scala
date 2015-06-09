@@ -32,4 +32,17 @@ class ListSpec extends FlatSpec with Matchers{
     val list = List(1,2,3,4)
     List.setHead(list, 10) should be (List(10,2,3,4))
   }
+  behavior of "list.drop(n)"
+  it should "drop the first `n` elements" in {
+    val list  = List(1,2,3,4,5,6,7,8,9,10)
+    List.drop(list,5) should be (List(6,7,8,9,10))
+  }
+  it should "error when dropping from empty list" in {
+    val list  = List()
+    an [Exception] should be thrownBy List.drop(list,5)
+  }
+  it should "error when dropping from empty list that is smaller than `n`" in {
+    val list  = List(1,2,3,4)
+    an [Exception] should be thrownBy List.drop(list,5)
+  }
 }
