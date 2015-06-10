@@ -49,4 +49,13 @@ class ListSpec extends FlatSpec with Matchers{
     val list  = List(1,2,3,4)
     List.drop(list,-1) should be (list)
   }
+  behavior of "list.dropWhile(f)"
+  it should "drop all elements matching predicate" in {
+    val list = List(1,2,3,4,5,6,7,8,9,10)
+    List.dropWhile(list,(x:Int) => x <= 8) should be (List(9,10))
+  }
+  it should "return empty list when applied to empty list" in {
+    val list = List()
+    List.dropWhile(list, (x:Int) => x <= 8) should be (List())
+  }
 }
