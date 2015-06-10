@@ -58,4 +58,19 @@ class ListSpec extends FlatSpec with Matchers{
     val list = List()
     List.dropWhile(list, (x:Int) => x <= 8) should be (List())
   }
+  behavior of "list.init(l)"
+  it should "return all but the last element of a list" in {
+    val list = List(1,2,3,4)
+    List.init(list) should be (List(1,2,3))
+  }
+  it should "return empty list when given an empty list" in {
+    List.init(List()) should be (List())
+  }
+  behavior of "list.length"
+  it should "return length of list" in {
+    List.length(List(1,2,3,4)) should be (4)
+  }
+  it should "return length of empty list" in {
+    List.length(List()) should be (0)
+  }
 }
