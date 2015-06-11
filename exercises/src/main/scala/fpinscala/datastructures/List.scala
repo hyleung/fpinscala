@@ -84,11 +84,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   def length[A](l: List[A]): Int = {
-    def _length(as:List[A], acc:Int): Int = as match {
-      case Nil => acc
-      case Cons(h,t) => _length(t,acc + 1)
-    }
-    _length(l,0)
+    foldLeft(l,0)((a,_) => a + 1)
   }
 
   @annotation.tailrec
