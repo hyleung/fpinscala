@@ -91,7 +91,11 @@ object List { // `List` companion object. Contains functions for creating and wo
     _length(l,0)
   }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h,t) => foldLeft(t, f(z,h))(f)
+  }
+
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
