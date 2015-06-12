@@ -98,4 +98,13 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return empty list if applied to empty list" in {
 		List.map(List[Int]())(_ * 2) should be (List())
 	}
+	behavior of "list.reverse"
+	it should "reverse a non-empty list" in {
+		val l = List(1,2,3,4,5)
+		List.reverse(l) should be (List(5,4,3,2,1))
+	}
+	it should "return empty list if given an empty list" in {
+		List.reverse(List()) should be (List())
+	}
+
 }
