@@ -76,17 +76,17 @@ class ListSpec extends FlatSpec with Matchers {
 	behavior of "list.foldLeft"
 	it should "fold left" in {
 		val l = List(1, 2, 3, 4, 5)
-		List.foldLeft(l, 0)((a, b) => a + b) should be(15)
+		List.foldLeft(l, 0)(_ + _) should be(15)
 	}
 	it should "return init value on empty list" in {
-		List.foldLeft(List[Int](), 0)((a, b) => a + b) should be(0)
+		List.foldLeft(List[Int](), 0)(_ + _) should be(0)
 	}
 	behavior of "list.map"
 	it should "map a function over a list" in {
 		val l = List(1,2,3,4,5)
-		List.map(l)((x) => x * 2) should be (List(2,4,6,8,10))
+		List.map(l)(_ * 2) should be (List(2,4,6,8,10))
 	}
 	it should "return empty list if applied to empty list" in {
-		List.map(List[Int]())((x) => x * 2) should be (List())
+		List.map(List[Int]())(_ * 2) should be (List())
 	}
 }
