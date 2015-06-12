@@ -106,5 +106,14 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return empty list if given an empty list" in {
 		List.reverse(List()) should be (List())
 	}
+	behavior of "foldRightWithLeft"
+	it should "foldRight" in {
+		val l = List(1,2,3,4,5)
+		List.foldRightWithLeft(l,0)((a,acc) => acc + a) should be (15)
+	}
+	it should "foldRight with empty list" in {
+		val l = List[Int]()
+		List.foldRightWithLeft(l,0)((a,acc) => acc + a) should be (0)
+	}
 
 }
