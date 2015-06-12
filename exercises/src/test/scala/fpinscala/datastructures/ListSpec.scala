@@ -115,5 +115,22 @@ class ListSpec extends FlatSpec with Matchers {
 		val l = List[Int]()
 		List.foldRightWithLeft(l,0)((a,acc) => acc + a) should be (0)
 	}
+  behavior of "append"
+  it should "append two non-empty lists" in {
+    val l = List(1,2,3,4,5)
+    val m = List(6,7,8,9,10)
+    List.append2(l, m) should be (List(1,2,3,4,5,6,7,8,9,10))
+  }
+  it should "append one non-empty list" in {
+    val l = List()
+    val m = List(6,7,8,9,10)
+    List.append2(l, m) should be (List(6,7,8,9,10))
+  }
+  it should "append two empty lists" in {
+    val l = List()
+    val m = List()
+    List.append2(l, m) should be (List())
+  }
+
 
 }
