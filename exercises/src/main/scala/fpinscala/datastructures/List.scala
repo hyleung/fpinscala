@@ -83,9 +83,9 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(h,t) => Cons(h,init(t))
   }
 
-  def length[A](l: List[A]): Int = {
-    foldLeft(l,0)((a,_) => a + 1)
-  }
+  def length[A](l: List[A]): Int = foldLeft(l,0)((a,_) => a + 1)
+
+  def lengthFoldRight[A](l: List[A]):Int = foldRight(l,0)((a,b) => b + 1)
 
   @annotation.tailrec
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {

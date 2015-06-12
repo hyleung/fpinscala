@@ -73,6 +73,15 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return length of empty list" in {
 		List.length(List()) should be(0)
 	}
+
+	behavior of "list.lengthFoldRight"
+	it should "return length of list" in {
+		List.lengthFoldRight(List(1, 2, 3, 4)) should be(4)
+	}
+	it should "return length of empty list" in {
+		List.lengthFoldRight(List()) should be(0)
+	}
+
 	behavior of "list.foldLeft"
 	it should "fold left" in {
 		val l = List(1, 2, 3, 4, 5)
