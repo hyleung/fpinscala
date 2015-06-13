@@ -139,4 +139,12 @@ class ListSpec extends FlatSpec with Matchers {
 		val l = List(a, b, c)
 		List.concat(l) should be (List(1,2,3,4,5,6))
 	}
+	behavior of "add1"
+	it should "add 1 to all elements of a list" in {
+		val l = List(1,2,3,4)
+		List.add1(l) should be (List(2,3,4,5))
+	}
+	it should "return empty list if applied to empty list" in {
+		List.add1(List()) should be (List())
+	}
 }
