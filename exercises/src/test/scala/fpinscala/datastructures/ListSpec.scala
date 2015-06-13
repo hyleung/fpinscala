@@ -147,4 +147,13 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return empty list if applied to empty list" in {
 		List.add1(List()) should be (List())
 	}
+	behavior of "filter"
+	it should "filter any elements matching predicate" in {
+		val l = List(1,2,3,4,5,6,7,8,9,10)
+		List.filter(l)(_ % 2 == 0) should be (List(1,3,5,7,9))
+	}
+	it should "return empty list if applied to empty list" in {
+		List.filter(List[Int]())(_ % 2 == 0) should be (List())
+	}
+
 }
