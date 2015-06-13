@@ -155,5 +155,12 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return empty list if applied to empty list" in {
 		List.filter(List[Int]())(_ % 2 == 0) should be (List())
 	}
-
+	behavior of "flatmap"
+	it should "concat a the lists returned by f" in {
+		val l = List(1,2,3,4,5)
+		List.flatMap(l)(a => List(a, a)) should be (List(1,1,2,2,3,3,4,4,5,5))
+	}
+	it should "return empty list if applied to empty list" in {
+		List.flatMap(List[Int]())(a => List(a,a)) should be (List())
+	}
 }
