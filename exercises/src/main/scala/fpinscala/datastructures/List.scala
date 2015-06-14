@@ -124,11 +124,13 @@ object List {
 		concat(foldRight(l,List[List[B]]())((a,acc) => Cons(f(a),acc)))
 
 	def addPairwise(as: List[Int], bs: List[Int]): List[Int] = zipWith(as, bs)(_ + _)
-	
+
 	def zipWith[A,B,C](as: List[A], bs: List[B])(f: (A,B) => C): List[C] = (as, bs) match {
 		case (Nil, _) => List()
 		case (_, Nil) => List()
 		case (Cons(ah, at), Cons(bh, bt)) => Cons(f(ah, bh), zipWith(at, bt)(f))
 	}
+	def startsWith[A](l: List[A], prefix: List[A]): Boolean = ???
 
+	def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
 }
