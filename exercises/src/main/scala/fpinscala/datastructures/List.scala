@@ -122,4 +122,17 @@ object List {
 
 	def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] =
 		concat(foldRight(l,List[List[B]]())((a,acc) => Cons(f(a),acc)))
+	def addPairwise(as: List[Int], bs: List[Int]): List[Int] = {
+		@annotation.tailrec
+		def _addPairwise(ys: List[Int], zs: List[Int], acc: List[Int]):List[Int] = {
+			ys match {
+				case Nil => acc
+				case Cons(yh,yt) => zs match {
+					case Nil => acc
+					case Cons(zh, zt) => _addPairwise(yt, zt, Cons(yh + zh, acc))
+				}
+			}
+		}
+		reverse(_addPairwise(as, bs, List[Int]()))
+	}
 }

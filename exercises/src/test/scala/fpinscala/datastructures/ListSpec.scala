@@ -163,4 +163,10 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "return empty list if applied to empty list" in {
 		List.flatMap(List[Int]())(a => List(a,a)) should be (List())
 	}
+	behavior of "addPairwise"
+	it should "add two lists pairwise" in {
+		val a = List(1,2,3,4)
+		val b = List(2,3,4,5)
+		List.addPairwise(a,b) should be (List(3,5,7,9))
+	}
 }
