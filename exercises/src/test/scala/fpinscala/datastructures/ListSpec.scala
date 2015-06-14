@@ -169,4 +169,9 @@ class ListSpec extends FlatSpec with Matchers {
 		val b = List(2,3,4,5)
 		List.addPairwise(a,b) should be (List(3,5,7,9))
 	}
+	it should "return empty if either param is empty" in {
+		val l = List(1,2,3,4)
+		List.addPairwise(List(),l) should be (List())
+		List.addPairwise(l,List()) should be (List())
+	}
 }
