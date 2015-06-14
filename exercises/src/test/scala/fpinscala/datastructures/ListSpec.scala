@@ -174,4 +174,21 @@ class ListSpec extends FlatSpec with Matchers {
 		List.addPairwise(List(),l) should be (List())
 		List.addPairwise(l,List()) should be (List())
 	}
+	behavior of "zipwith"
+	it should "zip two lists together, applying a f" in {
+		val a = List(1,2,3,4)
+		val b = List(2,3,4,5)
+		List.zipWith(a, b)(_ + _) should be (List(3,5,7,9))
+	}
+	it should "return empty if either param is empty" in {
+		val l = List(1,2,3,4)
+		List.zipWith(List[Int](),l)(_ + _) should be (List())
+		List.zipWith(l,List[Int]())(_ + _) should be (List())
+	}
+	it should "return result with length of first param even if other param is longer" in {
+		val a = List(1,2,3,4)
+		val b = List(2,3,4,5,6,7,8,9,10)
+		List.length(List.zipWith(a, b)(_ + _)) should be (List.length(a))
+	}
+
 }
