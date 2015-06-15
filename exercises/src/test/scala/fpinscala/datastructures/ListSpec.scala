@@ -190,5 +190,24 @@ class ListSpec extends FlatSpec with Matchers {
 		val b = List(2,3,4,5,6,7,8,9,10)
 		List.length(List.zipWith(a, b)(_ + _)) should be (List.length(a))
 	}
-
+	behavior of "startsWith"
+	it should "evaluate to true if a list starts with another" in {
+		val l = List(1,2,3,4)
+		val m = List(1,2)
+		List.startsWith(l,m) should be (true)
+	}
+	it should "evaluate to false if a list *does not* start with another" in {
+		val l = List(1,2,3,4)
+		val m = List(2,3)
+		List.startsWith(l,m) should be (false)
+	}
+	it should "evaluate to false if the subsequence is longer than the list" in {
+		val l = List(1,2,3,4)
+		val m = List(1,2,3,4,5)
+		List.startsWith(l,m) should be (false)
+	}
+	it should "evaluate to false if either parameter is empty" in {
+		List.startsWith(List(),List(1,2)) should be (false)
+		List.startsWith(List(1,2,3),List()) should be (false)
+	}
 }
