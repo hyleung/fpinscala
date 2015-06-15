@@ -206,8 +206,10 @@ class ListSpec extends FlatSpec with Matchers {
 		val m = List(1,2,3,4,5)
 		List.startsWith(l,m) should be (false)
 	}
-	it should "evaluate to false if either parameter is empty" in {
+	it should "evaluate to false if first parameter is empty" in {
 		List.startsWith(List(),List(1,2)) should be (false)
-		List.startsWith(List(1,2,3),List()) should be (false)
+	}
+	it should "evaluate to true if the prefix parameter is empty" in {
+		List.startsWith(List(1,2,3),List()) should be (true)
 	}
 }
