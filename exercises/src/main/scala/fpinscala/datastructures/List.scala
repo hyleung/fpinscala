@@ -138,12 +138,12 @@ object List {
 		case _ => false
  	}
 
-	def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = (sup, sub) match {
-		case (Nil, Nil) => true
-		case (Nil, _) =>  false
-		case (_, Nil) => true
-		case (a, b) if startsWith(a,b) => true
-		case (Cons(h,t), b) => hasSubsequence(t,b)
+	@annotation.tailrec
+	def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
+		case Nil if sub == Nil => true
+		case Nil => false
+		case _ if startsWith(sup, sub) => true
+		case Cons(h,t) => hasSubsequence(t,sub)
 	}
 
 }
