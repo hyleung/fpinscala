@@ -212,4 +212,21 @@ class ListSpec extends FlatSpec with Matchers {
 	it should "evaluate to true if the prefix parameter is empty" in {
 		List.startsWith(List(1,2,3),List()) should be (true)
 	}
+	behavior of "hasSubsequence"
+	it should "evaluate to true of subsequence is found" in {
+		val l = List(1,2,3,4,5)
+		val p = List(2,3,4)
+		List.hasSubsequence(l,p) should be (true)
+	}
+	it should "evaluate to false if list is empty" in {
+		List.hasSubsequence(List(),List(1,2,3)) should be (false)
+	}
+	it should "evaluate to true of subsequence is empty" in {
+		val l = List(1,2,3,4,5)
+		List.hasSubsequence(l, List()) should be (true)
+	}
+	it should "evaluate to true of both params are empty" in {
+		List.hasSubsequence(List(),List()) should be (true)
+	}
+
 }
