@@ -22,4 +22,5 @@ object Tree {
     case Leaf(x) => Leaf(f(x))
     case Branch(l,r) => Branch(map(l)(f), map(r)(f))
   }
+  def fold[A,B](t: Tree[A])(l: A => B)(b: (B,B) => B): B = ???
 }
