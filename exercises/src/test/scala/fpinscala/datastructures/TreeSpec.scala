@@ -53,4 +53,72 @@ class TreeSpec extends FlatSpec with Matchers {
 														Leaf(5)))))
 		Tree.depth(tree) should be(4)
 	}
+	behavior of "equals"
+	it should "evaluate true" in {
+		val tree = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(1)))))
+
+		val expected = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(1)))))
+
+		tree should be (expected)
+	}
+	it should "evaluate false" in {
+		val tree = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(1)))))
+
+		val expected = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(10)))))
+
+		tree should not be (expected)
+	}
+
+	behavior of "map"
+	it should "map a function over singleton" in {
+		val tree = Leaf(1)
+		Tree.map(tree)(_ * 10) should be (Leaf(10))
+	}
+	it should "map a function over branch" in {
+		val tree = Branch(Leaf(1),Leaf(1))
+		Tree.map(tree)(_ * 10) should be (Branch(Leaf(10),Leaf(10)))
+	}
+	it should "map a function over deeper tree" in {
+		val tree = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(1)))))
+
+		val expected = Branch(
+			Leaf(10),
+			Branch(
+				Branch(Leaf(10), Leaf(10)),
+				Branch(Leaf(10), Branch(
+					Leaf(10),
+					Leaf(10)))))
+
+		Tree.map(tree)(_ * 10) should be (expected)
+	}
 }
