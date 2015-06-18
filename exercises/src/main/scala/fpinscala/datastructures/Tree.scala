@@ -14,5 +14,8 @@ object Tree {
     case Leaf(x) => x
     case Branch(l,r) => if (maximum(l) >= maximum(r)) maximum(l) else maximum(r)
   }
-  def depth(t: Tree[Int]):Int = ???
+  def depth(t: Tree[Int]):Int = t match {
+    case Leaf(_) => 0
+    case Branch(l,r) =>  1 + (depth(l) max depth(r))
+  }
 }
