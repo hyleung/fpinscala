@@ -151,4 +151,33 @@ class TreeSpec extends FlatSpec with Matchers {
 					Leaf(1)))))
 		Tree.fold(tree)((a:Int) => a * 2)( (b,c) => b + c) should be (12)
 	}
+
+	behavior of "mapFold"
+	it should "map a function over singleton" in {
+		val tree = Leaf(1)
+		Tree.mapFold(tree)(_ * 10) should be (Leaf(10))
+	}
+	it should "map a function over branch" in {
+		val tree = Branch(Leaf(1),Leaf(1))
+		Tree.mapFold(tree)(_ * 10) should be (Branch(Leaf(10),Leaf(10)))
+	}
+	it should "map a function over deeper tree" in {
+		val tree = Branch(
+			Leaf(1),
+			Branch(
+				Branch(Leaf(1), Leaf(1)),
+				Branch(Leaf(1), Branch(
+					Leaf(1),
+					Leaf(1)))))
+
+		val expected = Branch(
+			Leaf(10),
+			Branch(
+				Branch(Leaf(10), Leaf(10)),
+				Branch(Leaf(10), Branch(
+					Leaf(10),
+					Leaf(10)))))
+
+		Tree.mapFold(tree)(_ * 10) should be (expected)
+	}
 }
