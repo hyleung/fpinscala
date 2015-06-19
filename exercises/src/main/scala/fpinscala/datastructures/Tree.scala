@@ -12,7 +12,7 @@ object Tree {
   }
   def maximum(t: Tree[Int]): Int = t match {
     case Leaf(x) => x
-    case Branch(l,r) => if (maximum(l) >= maximum(r)) maximum(l) else maximum(r)
+    case Branch(l,r) => maximum(l) max maximum(r)
   }
   def depth(t: Tree[Int]):Int = t match {
     case Leaf(_) => 0
@@ -22,7 +22,8 @@ object Tree {
     case Leaf(x) => Leaf(f(x))
     case Branch(l,r) => Branch(map(l)(f), map(r)(f))
   }
-  def fold[A,B](t: Tree[A])(l: A => B)(b: (B,B) => B): B = t match {
+
+  def fold[F,G](t: Tree[F])(l: F => G)(b: (G,G) => G): G = t match {
     case Leaf(x) => l(x)
     case Branch(left,right) => b(fold(left)(l)(b), fold(right)(l)(b))
   }
