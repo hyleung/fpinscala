@@ -18,6 +18,9 @@ object Tree {
     case Leaf(_) => 0
     case Branch(l,r) =>  1 + (depth(l) max depth(r))
   }
+
+  def depthFold(t: Tree[Int]):Int = fold(t)((_) => 0)((l,r) => 1 + (l max r))
+
   def map[A,B](t: Tree[A])(f: A => B): Tree[B] = t match {
     case Leaf(x) => Leaf(f(x))
     case Branch(l,r) => Branch(map(l)(f), map(r)(f))
