@@ -220,4 +220,14 @@ class TreeSpec extends FlatSpec with Matchers {
 		val tree = Branch(Leaf(100), Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(500)))))
 		Tree.maximumFold(tree) should be(500)
 	}
+
+	behavior of "tree.sizeFold"
+	it should "compute the size of the single level tree" in {
+		val tree = Branch(Leaf(1), Leaf(2))
+		Tree.sizeFold(tree) should be(2)
+	}
+	it should "compute the size of the mutlti-level tree" in {
+		val tree = Branch(Leaf(1), Branch(Leaf(2), Leaf(3)))
+		Tree.sizeFold(tree) should be(3)
+	}
 }

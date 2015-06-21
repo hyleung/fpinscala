@@ -10,6 +10,9 @@ object Tree {
     case Leaf(_) => 1
     case Branch(l,r) => size(l) + size(r)
   }
+
+  def sizeFold[A](t: Tree[A]): Int = fold(t)((a:A) => 1)((l,r) => l + r)
+
   def maximum(t: Tree[Int]): Int = t match {
     case Leaf(x) => x
     case Branch(l,r) => maximum(l) max maximum(r)
