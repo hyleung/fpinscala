@@ -202,4 +202,22 @@ class TreeSpec extends FlatSpec with Matchers {
 					Leaf(5)))))
 		Tree.depthFold(tree) should be(4)
 	}
+
+	behavior of "tree.maximumFold"
+	it should "determine the maximum in a tree" in {
+		val tree = Branch(Leaf(1), Branch(Leaf(2), Leaf(3)))
+		Tree.maximumFold(tree) should be(3)
+	}
+	it should "determine maximum in a singleton tree" in {
+		val tree = Leaf(10)
+		Tree.maximumFold(tree) should be(10)
+	}
+	it should "determine maximum in deep unbalanced tree" in {
+		val tree = Branch(Leaf(100), Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))))
+		Tree.maximumFold(tree) should be(100)
+	}
+	it should "determine maximum in deep unbalanced tree (max in deep leaf)" in {
+		val tree = Branch(Leaf(100), Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(500)))))
+		Tree.maximumFold(tree) should be(500)
+	}
 }

@@ -14,6 +14,9 @@ object Tree {
     case Leaf(x) => x
     case Branch(l,r) => maximum(l) max maximum(r)
   }
+
+  def maximumFold(t: Tree[Int]): Int = fold(t)((a:Int) => a)((l,r) =>  l max r)
+
   def depth(t: Tree[Int]):Int = t match {
     case Leaf(_) => 0
     case Branch(l,r) =>  1 + (depth(l) max depth(r))
