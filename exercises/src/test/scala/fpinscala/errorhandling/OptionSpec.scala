@@ -48,4 +48,15 @@ class OptionSpec extends FlatSpec with Matchers{
     }
     result should be (None)
   }
+  behavior of "Option.getOrElse"
+  it should "return the default value for None" in {
+    val option:Option[Int] = None
+    val result = option.getOrElse(42)
+    result should be (42)
+  }
+  it should "return the value for Some" in {
+    val option = Some(1)
+    val result = option.getOrElse(42)
+    result should be (1)
+  }
 }
