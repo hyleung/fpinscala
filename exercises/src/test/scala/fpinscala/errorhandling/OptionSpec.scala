@@ -17,4 +17,35 @@ class OptionSpec extends FlatSpec with Matchers{
     val result = option map {a => s"$a"}
     result should be (None)
   }
+  behavior of "Option.flatmap"
+  it should "apply with Some" in {
+    val option = Some(1)
+    val result = option flatMap { a => Some(a + 1)}
+    result should be (Some(2))
+  }
+  it should "apply with None" in {
+    val option:Option[Int]  = None
+    val result = option flatMap { a => Some(a + 1)}
+    result should be (None)
+  }
+  behavior of "Option map/flatmap"
+  it should "allow composition with Some" in {
+    val optionA = Some(1)
+    val optionB = Some(2)
+    val optionC = Some(3)
+    val result = optionA flatMap {
+      a => optionB flatMap {
+        b => optionC map {c => a + b + c}}
+    }
+    result should be (Some(6))
+  }
+  it should "allow composition with None" in {
+    val optionA = Some(1)
+    val optionB:Option[Int] = None
+    val result = optionA flatMap {
+      a => optionB map {
+        b => a + b}
+    }
+    result should be (None)
+  }
 }

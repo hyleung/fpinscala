@@ -11,7 +11,10 @@ sealed trait Option[+A] {
 
   def getOrElse[B>:A](default: => B): B = sys.error("todo")
 
-  def flatMap[B](f: A => Option[B]): Option[B] = sys.error("todo")
+  def flatMap[B](f: A => Option[B]): Option[B] = this match {
+    case Some(v) => f(v)
+    case None => None
+  }
 
   def orElse[B>:A](ob: => Option[B]): Option[B] = sys.error("todo")
 
