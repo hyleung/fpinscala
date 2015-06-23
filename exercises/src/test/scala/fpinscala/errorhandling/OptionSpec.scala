@@ -48,6 +48,27 @@ class OptionSpec extends FlatSpec with Matchers{
     }
     result should be (None)
   }
+  it should "compose using for comprehensions for Some" in {
+    val optionA = Some(1)
+    val optionB = Some(2)
+    val optionC = Some(3)
+    for (
+      a <- optionA;
+      b <- optionB;
+      c <- optionC
+    ) yield a + b + c should be (6)
+  }
+  it should "compose using for comprehensions for None" in {
+    val optionA = Some(1)
+    val optionB = Some(2)
+    val optionC:Option[Int] = None
+    for (
+      a <- optionA;
+      b <- optionB;
+      c <- optionC
+    ) yield a + b + c should be (None)
+  }
+
   behavior of "Option.getOrElse"
   it should "return the default value for None" in {
     val option:Option[Int] = None
