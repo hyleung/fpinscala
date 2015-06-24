@@ -80,4 +80,16 @@ class OptionSpec extends FlatSpec with Matchers{
     val result = option.getOrElse(42)
     result should be (1)
   }
+
+  behavior of "Option.orElse"
+  it should "return value if available" in {
+    val option = Some(1)
+    val result = option orElse Some(2)
+    result should be (Some(1))
+  }
+  it should "return fallback if not available" in {
+    val option:Option[Int] = None
+    val result = option orElse Some(2)
+    result should be (Some(2))
+  }
 }
