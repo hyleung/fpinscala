@@ -52,21 +52,21 @@ class OptionSpec extends FlatSpec with Matchers{
     val optionA = Some(1)
     val optionB = Some(2)
     val optionC = Some(3)
-    for (
-      a <- optionA;
-      b <- optionB;
+    for {
+      a <- optionA
+      b <- optionB
       c <- optionC
-    ) yield a + b + c should be (6)
+    } yield a + b + c should be (6)
   }
   it should "compose using for comprehensions for None" in {
     val optionA = Some(1)
     val optionB = Some(2)
-    val optionC:Option[Int] = None
-    for (
-      a <- optionA;
-      b <- optionB;
+    val optionC: Option[Int] = None
+    for {
+      a <- optionA
+      b <- optionB
       c <- optionC
-    ) yield a + b + c should be (None)
+    } yield a + b + c should be (None)
   }
 
   behavior of "Option.getOrElse"
@@ -91,5 +91,22 @@ class OptionSpec extends FlatSpec with Matchers{
     val option:Option[Int] = None
     val result = option orElse Some(2)
     result should be (Some(2))
+  }
+
+  behavior of "Option.filter"
+  it should "return Some if predicate applies" in {
+    val option = Some(42)
+    val result = option filter {_ % 2 == 0}
+    result should be (Some(42))
+  }
+  it should "return None if predicate applies" in {
+    val option = Some(43)
+    val result = option filter {_ % 2 == 0}
+    result should be (None)
+  }
+  it should "return None if applied to None" in {
+    val option:Option[Int] = None
+    val result = option filter {_ % 2 == 0}
+    result should be (None)
   }
 }

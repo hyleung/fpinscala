@@ -18,7 +18,10 @@ sealed trait Option[+A] {
   //if there is a value, return a Some of it, or else return the fallback Option
   def orElse[B>:A](ob: => Option[B]): Option[B] = this map(Some(_)) getOrElse ob
 
-  def filter(f: A => Boolean): Option[A] = sys.error("todo")
+  def filter(f: A => Boolean): Option[A] = this match {
+    case Some(v) if f(v) => this
+    case _ => None
+  }
 }
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
