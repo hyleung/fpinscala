@@ -1,8 +1,10 @@
 package fpinscala.errorhandling
 
 import org.scalatest.{Matchers, FlatSpec}
+
 import scala.{Option => _, Some => _, Either => _, _} // hide std library `Option`, `Some` and `Either`, since we are writing our own in this chapter
-import breeze.stats._
+import grizzled.math.stats._
+import org.scalacheck.Prop.forAll
 /**
  * Created by hyleung on 15-06-22.
  */
@@ -115,7 +117,7 @@ class OptionSpec extends FlatSpec with Matchers {
   it should "compute the variance of Some" in {
     val seq:Seq[Double] = Seq(1,2,3,4)
     val result: Option[Double] = Option.variance(seq)
-    result should be (Some(1.25))
+    result should be (Some(populationVariance(seq:_*)))
   }
   it should "return None for varance of empty seq" in {
     Option.variance(Seq.empty[Double]) should be (None)
