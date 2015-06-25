@@ -123,4 +123,17 @@ class OptionSpec extends FlatSpec with Matchers {
     Option.variance(Seq.empty[Double]) should be (None)
   }
 
+  behavior of "Option.map2"
+  it should "perform computation on value of each" in {
+    val optionA = Some(1)
+    val optionB = Some(1)
+    Option.map2(optionA, optionB)((a,b) => a + b) should be (Some(2))
+  }
+  it should "return None" in {
+    val optionA = Some(1)
+    val optionB:Option[Int] = None
+    Option.map2(optionA, optionB)((a,b) => a + b) should be (None)
+  }
+
+
 }
