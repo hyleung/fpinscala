@@ -7,6 +7,8 @@ scalaVersion := "2.11.6"
 // Change this to another test framework if you prefer
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.3" % "test"
+libraryDependencies += "org.scalanlp" %% "breeze" % "0.11.2" % "test"
+
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 // Uncomment to use Akka
 //libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.11"
