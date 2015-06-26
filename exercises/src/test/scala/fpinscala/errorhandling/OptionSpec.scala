@@ -148,4 +148,27 @@ class OptionSpec extends FlatSpec with Matchers {
     Option.sequence(List.empty[Option[Int]]) should be (Some(Nil))
   }
 
+  behavior of "Option.traverse"
+  it should "traverse a list of A and compute option of list" in {
+    val strings = List("1","2","3","4")
+    Option.traverse(strings)(toInt) should be (Some(List(1,2,3,4)))
+    def toInt(s:String):Option[Int] = {
+      try {
+        Some(Integer.parseInt(s))
+      } catch {
+        case t:Throwable => None
+      }
+    }
+  }
+  it should "traverse a list of A and return None for failure" in {
+    val strings = List("1","2","three","4")
+    Option.traverse(strings)(toInt) should be (None)
+    def toInt(s:String):Option[Int] = {
+      try {
+        Some(Integer.parseInt(s))
+      } catch {
+        case t:Throwable => None
+      }
+    }
+  }
 }
