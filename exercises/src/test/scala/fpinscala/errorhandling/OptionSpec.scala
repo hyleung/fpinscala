@@ -144,8 +144,8 @@ class OptionSpec extends FlatSpec with Matchers {
     val options = List(Some(1), None, Some(3))
     Option.sequence(options) should be (None)
   }
-  it should "return None for empty list" in {
-    Option.sequence(List.empty[Option[Int]]) should be (None)
+  it should "return Some(Nil) for empty list" in {
+    Option.sequence(List.empty[Option[Int]]) should be (Some(Nil))
   }
 
 }
