@@ -171,4 +171,17 @@ class OptionSpec extends FlatSpec with Matchers {
       }
     }
   }
+
+  behavior of "Option.sequence2"
+  it should "convert a list of option into list" in {
+    val options = List(Some(1), Some(2), Some(3))
+    Option.sequence2(options) should be (Some(List(1,2,3)))
+  }
+  it should "convert a list of option containing None into list" in {
+    val options = List(Some(1), None, Some(3))
+    Option.sequence2(options) should be (None)
+  }
+  it should "return Some(Nil) for empty list" in {
+    Option.sequence2(List.empty[Option[Int]]) should be (Some(Nil))
+  }
 }
