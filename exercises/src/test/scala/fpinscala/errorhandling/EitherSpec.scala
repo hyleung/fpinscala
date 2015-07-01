@@ -17,4 +17,15 @@ class EitherSpec extends FlatSpec with Matchers{
     val f = (v:String) => s"hello $v"
     l map f should be (l)
   }
+  behavior of "Either.flatMap"
+  it should "follow the 'right' branch"  in {
+    val r = Right("bar")
+    val f = (v:String) => Right(s"hello $v")
+    r flatMap  f should be (Right("hello bar"))
+  }
+  it should "follow the 'left' branch"  in {
+    val l = Left("foo")
+    val f = (v:String) => Right(s"hello $v")
+    l flatMap f should be (l)
+  }
 }
