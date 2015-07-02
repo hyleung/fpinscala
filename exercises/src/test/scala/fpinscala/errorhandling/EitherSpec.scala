@@ -28,4 +28,15 @@ class EitherSpec extends FlatSpec with Matchers{
     val f = (v:String) => Right(s"hello $v")
     l flatMap f should be (l)
   }
+  behavior of "Either.orElse"
+  it should "return Right value" in {
+    val r = Right("bar")
+    val other = Right("foo")
+    (r orElse other) should be (r)
+  }
+  it should "return other value" in {
+    val l = Left("bar")
+    val other = Right("foo")
+    (l orElse other) should be (other)
+  }
 }
