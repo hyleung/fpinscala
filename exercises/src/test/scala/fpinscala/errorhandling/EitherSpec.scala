@@ -39,4 +39,24 @@ class EitherSpec extends FlatSpec with Matchers{
     val other = Right("foo")
     (l orElse other) should be (other)
   }
+  behavior of "Either.map2"
+  it should "Map two Rights" in {
+    val r1 = Right("foo")
+    val r2 = Right("bar")
+    val result = r1.map2(r2)((s,b) => s"$s $b")
+    result should be (Right("foo bar"))
+  }
+  it should "return first left" in {
+    val left = Left("bar")
+    val r1 = Right("foo")
+    val result = left.map2(r1)((s,b) => s"$s $b")
+    result should be (left)
+  }
+
+  it should "return second left" in {
+    val r1 = Right("foo")
+    val left = Left("bar")
+    val result = r1.map2(left)((s,b) => s"$s $b")
+    result should be (left)
+  }
 }
