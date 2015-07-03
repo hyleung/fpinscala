@@ -34,8 +34,7 @@ object Either {
 
   def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = es match {
         case Nil => Right(Nil)
-        case Right(v)::t => sequence(t) map { l => v +: l}
-        case Left(e)::_ => Left(e)
+        case h::t => h flatMap { v =>  sequence(t) map { l => v +: l}}
     }
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
