@@ -52,11 +52,22 @@ class EitherSpec extends FlatSpec with Matchers{
     val result = left.map2(r1)((s,b) => s"$s $b")
     result should be (left)
   }
-
   it should "return second left" in {
     val r1 = Right("foo")
     val left = Left("bar")
     val result = r1.map2(left)((s,b) => s"$s $b")
     result should be (left)
+  }
+
+  behavior of "Either.traverse"
+  it should "traverse and return Right" in {
+    val list = List(2,4,6,8,10)
+    val result = Either.traverse(list){a => if (a % 2 == 0) Right(a) else Left("I. can't. even.")}
+    result should be (Right(list))
+  }
+  it should "traverse and return Left" in {
+    val list = List(2,4,6,8,10,11)
+    val result = Either.traverse(list){a => if (a % 2 == 0) Right(a) else Left("I. can't. even.")}
+    result should be (Left("I. can't. even."))
   }
 }
