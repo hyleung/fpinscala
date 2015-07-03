@@ -32,7 +32,11 @@ object Either {
   def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
     es.foldRight[Either[E,List[B]]](Right(List.empty[B])){ (a,zs) => f(a) flatMap{ba => zs map{ z => ba +: z }  }  }
 
-  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = sys.error("todo")
+  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = es match {
+        case Nil => Right(Nil)
+        case Right(v)::t => sequence(t) map { l => v +: l}
+        case Left(e)::_ => Left(e)
+    }
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
     if (xs.isEmpty) 

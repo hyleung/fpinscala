@@ -70,4 +70,24 @@ class EitherSpec extends FlatSpec with Matchers{
     val result = Either.traverse(list){a => if (a % 2 == 0) Right(a) else Left("I. can't. even.")}
     result should be (Left("I. can't. even."))
   }
+
+  behavior of "Either.sequence"
+  it should "return list if all Right" in {
+    val list = List(
+      Right(1),
+      Right(2),
+      Right(3)
+    )
+    val result = Either.sequence(list)
+    result should be (Right(List(1,2,3)))
+  }
+  it should "return Left if any Left" in {
+    val list = List(
+      Right(1),
+      Left("yo dawg"),
+      Right(3)
+    )
+    val result = Either.sequence(list)
+    result should be (Left("yo dawg"))
+  }
 }
