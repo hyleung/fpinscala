@@ -90,4 +90,17 @@ class EitherSpec extends FlatSpec with Matchers{
     val result = Either.sequence(list)
     result should be (Left("yo dawg"))
   }
+  behavior of "Either.map3"
+  it should "Map two Rights" in {
+    val r1 = Right("foo")
+    val r2 = Right("bar")
+    val result = r1.map3(r2)((s,b) => s"$s $b")
+    result should be (Right("foo bar"))
+  }
+  it should "return all errors" in {
+    val l1 = Left("bar")
+    val l2 = Left("foo")
+    val result = l1.map3(l2)((s,b) => s"$s $b")
+    result should be (Left(List("bar","foo")))
+  }
 }
