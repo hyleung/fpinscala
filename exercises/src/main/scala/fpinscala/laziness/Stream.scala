@@ -17,7 +17,10 @@ trait Stream[+A] {
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
-  def take(n: Int): Stream[A] = sys.error("todo")
+  def take(n: Int): Stream[A] = this match {
+    case Cons(h,t) if n > 0 => Cons(h,() => t().take(n-1))
+    case Cons(_,_) if n == 0 => Stream.empty[A]
+  }
 
   def drop(n: Int): Stream[A] = sys.error("todo")
 
@@ -26,6 +29,11 @@ trait Stream[+A] {
   def forAll(p: A => Boolean): Boolean = sys.error("todo")
 
   def headOption: Option[A] = sys.error("todo")
+
+  def toList:List[A] = this match {
+    case Empty => Nil
+    case Cons(h,t) => h() :: t().toList
+  }
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
