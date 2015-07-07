@@ -26,5 +26,14 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "convert a stream to a list" in {
 		Stream(1,2,3,4).toList should be (List(1,2,3,4))
 	}
-
+	behavior of "Stream.drop"
+	it should "drop n values" in {
+		Stream(1,2,3,4,5).drop(3).toList should be (List(4,5))
+	}
+	it should "drop 0 values" in {
+		Stream(1,2,3,4,5).drop(0).toList should be (List(1,2,3,4,5))
+	}
+	it should "drop only up to the length values" in {
+		Stream(1,2,3,4,5).drop(10).toList should be (Nil)
+	}
 }
