@@ -36,4 +36,15 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "drop only up to the length values" in {
 		Stream(1,2,3,4,5).drop(10).toList should be (Nil)
 	}
+	behavior of "Stream.takeWhile"
+	it should "take elements until predicate is false" in {
+		val s = Stream(1,2,3,4,5,6,7,8,9,10).takeWhile(i => i <=5)
+		s.toList should be (List(1,2,3,4,5))
+	}
+	it should "return empty if stream is empty" in {
+		Stream.empty[Int].takeWhile(i => i <=5) should be (Stream.empty)
+	}
+	it should "return empty if first element fails predicate" in {
+		Stream(1,2,3,4,5,6,7,8,9,10).takeWhile(i => i < 1) should be (Stream.empty)
+	}
 }
