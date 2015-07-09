@@ -59,5 +59,11 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return false for an empty stream" in {
 		Stream.empty[Int].forAll{_ => true} should be (false)
 	}
-
+	behavior of "Stream.map"
+	it should "map a function over all elements in a Stream" in {
+		ones.map{i => i * 2}.take(5).toList should be (List(2,2,2,2,2))
+	}
+	it should "return empty if applied to empty Stream" in {
+		Stream.empty[Int].map{_ *2} should be (Stream.empty)
+	}
 }
