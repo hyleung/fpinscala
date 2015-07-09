@@ -50,6 +50,8 @@ trait Stream[+A] {
   // writing your own function signatures.
   def map[B](f: A => B):Stream[B] = this.foldRight(Stream.empty[B])((a,b) => Stream.cons(f(a),b))
 
+  def flatMap[B](f: A => Stream[B]):Stream[B] = ???
+
 
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
