@@ -47,4 +47,17 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return empty if first element fails predicate" in {
 		Stream(1,2,3,4,5,6,7,8,9,10).takeWhile(i => i < 1) should be (Stream.empty)
 	}
+	behavior of "Stream.forAll"
+	it should "return true if all elements in a Stream match a predicate" in {
+		val s = Stream(1,2,3,4,5,6,7,8,9,10)
+		s.forAll{i => i<=10} should be (true)
+	}
+	it should "return false if any element doesn't match the predicate" in {
+		val s = Stream(1,2,3,4,5,6,7,8,9,10)
+		s.forAll{i => i!=5} should be (false)
+	}
+	it should "return false for an empty stream" in {
+		Stream.empty[Int].forAll{_ => true} should be (false)
+	}
+
 }

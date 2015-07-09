@@ -34,7 +34,10 @@ trait Stream[+A] {
     case Empty => Empty
   }
 
-  def forAll(p: A => Boolean): Boolean = sys.error("todo")
+  def forAll(p: A => Boolean): Boolean = this match {
+    case Empty => false
+    case _ => this.foldRight(true)((a,b) => p(a) && b)
+  }
 
   def headOption: Option[A] = sys.error("todo")
 
