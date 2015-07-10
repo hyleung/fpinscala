@@ -66,6 +66,16 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return empty if applied to empty Stream" in {
 		Stream.empty[Int].map{_ *2} should be (Stream.empty)
 	}
+	behavior of "Stream.append"
+	it should "append two streams" in {
+		(Stream(1,2) ++ Stream(3,4)).toList should be (List(1,2,3,4))
+	}
+	it should "append stream onto empty" in {
+		(Stream.empty[Int] ++ Stream(1,2,3)).toList should be (List(1,2,3))
+	}
+	it should "append empty onto stream" in {
+		(Stream(1,2,3)++ Stream.empty).toList should be (List(1,2,3))
+	}
 	behavior of "Stream.flatMap"
 	val twos:Stream[Int] = Stream.cons(2,twos)
 	val threes:Stream[Int] = Stream.cons(3,threes)

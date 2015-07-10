@@ -50,10 +50,11 @@ trait Stream[+A] {
   // writing your own function signatures.
   def map[B](f: A => B):Stream[B] = this.foldRight(Stream.empty[B])((a,b) => Stream.cons(f(a),b))
 
-  def flatMap[B](f: A => Stream[B]):Stream[B] = ???
-
+  def flatMap[B](f: A => Stream[B]):Stream[B] = foldRight(empty[B])((h,t) => f(h) ++ t)
 
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
+
+  def ++[B>:A](s: => Stream[B]):Stream[B] = foldRight(s)((h,t) =>  cons(h,t))
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -75,4 +76,5 @@ object Stream {
   def from(n: Int): Stream[Int] = sys.error("todo")
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
+
 }
