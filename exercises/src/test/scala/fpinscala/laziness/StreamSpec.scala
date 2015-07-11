@@ -83,11 +83,17 @@ class StreamSpec extends FlatSpec with Matchers{
 		ones.flatMap(a => Stream(a)).take(5).toList should be (List(1,1,1,1,1))
 	}
 	it should "flatMap/map" in {
-
 		val result = twos.flatMap{a => threes map { b =>  a + b} }
 		result.take(5).toList should be (List(5,5,5,5,5))
 	}
 	it should "return empty when applied to empty" in {
 		Stream.empty[Int].flatMap(a => Stream(a)) should be (Stream.empty)
+	}
+	behavior of "Stream.filter"
+	it should "filter out elements not matching a predicate" in {
+		Stream(1,2,3,4,5).filter(_ % 2 == 0).toList should be (List(2,4))
+	}
+	it should "return empty if applied to empty" in {
+		Stream.empty[Int].filter(_ % 2 == 0) should be (Stream.empty)
 	}
 }
