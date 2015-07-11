@@ -96,4 +96,10 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return empty if applied to empty" in {
 		Stream.empty[Int].filter(_ % 2 == 0) should be (Stream.empty)
 	}
+	behavior of "Stream.from"
+	it should "construct stream of integers from..." in {
+		Stream.from(1).take(5).toList should be (List(1,2,3,4,5))
+	}
+
+
 }
