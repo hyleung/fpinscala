@@ -100,6 +100,12 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "construct stream of integers from..." in {
 		Stream.from(1).take(5).toList should be (List(1,2,3,4,5))
 	}
-
+	behavior of "Stream.headOption"
+	it should "return Some if exists" in {
+		Stream(1,2,3,4,5).headOption should be (Some(1))
+	}
+	it should "return None if no elements exist" in {
+		Stream.empty[Int].headOption should be (None)
+	}
 
 }
