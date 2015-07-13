@@ -39,10 +39,7 @@ trait Stream[+A] {
     case _ => this.foldRight(true)((a,b) => p(a) && b)
   }
 
-  def headOption: Option[A] = this match {
-    case Empty => None
-    case Cons(h,t) => Some(h())
-  }
+  def headOption: Option[A] = foldRight(Option.empty[A])((h,t) => Some(h))
 
   def toList:List[A] = this match {
     case Empty => Nil
