@@ -111,4 +111,13 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return stream of constant value" in {
 		Stream.constant(1).take(5).toList should be (List(1,1,1,1,1))
 	}
+	behavior of "Stream.unfold"
+	it should "unfold to some" in {
+		val s = Stream.unfold(0)(s => if (s < 10) Some(s, s + 1) else None)
+		s.toList should be (List(0,1,2,3,4,5,6,7,8,9))
+	}
+	it should "unfold to empty" in {
+		val s = Stream.unfold(0)(_ => None)
+		s should be (Stream.empty[Int])
+	}
 }

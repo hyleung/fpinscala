@@ -77,7 +77,10 @@ object Stream {
   val ones: Stream[Int] = constant(1)
   def from(n: Int): Stream[Int] = Stream.cons(n,from(n+1))
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((v, next)) => cons(v, unfold(next)(f))
+    case None => Stream.empty[A]
+  }
 
   def constant[A](a: A): Stream[A] = Stream.cons(a,constant(a))
 }
