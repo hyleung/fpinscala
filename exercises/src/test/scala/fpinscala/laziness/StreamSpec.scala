@@ -107,5 +107,8 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return None if no elements exist" in {
 		Stream.empty[Int].headOption should be (None)
 	}
-
+	behavior of "Stream.constant"
+	it should "return stream of constant value" in {
+		Stream.constant(1).take(5).toList should be (List(1,1,1,1,1))
+	}
 }
