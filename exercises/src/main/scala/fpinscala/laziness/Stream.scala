@@ -75,7 +75,7 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = constant(1)
-  def from(n: Int): Stream[Int] = Stream.cons(n,from(n+1))
+  def from(n: Int): Stream[Int] = unfold(n)(s => Some(s,s + 1))
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
     case Some((v, next)) => cons(v, unfold(next)(f))
