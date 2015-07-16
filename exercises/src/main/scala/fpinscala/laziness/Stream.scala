@@ -57,6 +57,10 @@ trait Stream[+A] {
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 
   def ++[B>:A](s: => Stream[B]):Stream[B] = foldRight(s)((h,t) =>  cons(h,t))
+
+  def mapWithUnfold[B](f: A => B):Stream[B] = unfold(this){
+    case Empty => None
+    case Cons(h,t) => Some(f(h()),t())}
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -87,4 +91,6 @@ object Stream {
   //0, 1, 1, 2, 3, 5, 8,
   //def fibs:Stream[Int] = unfold((0,1))(s => Some(s._1, (s._2, s._1 + s._2)))
   def fibs:Stream[Int] = unfold((0,1)){ case (f1,f2) => Some(f1, (f2, f1 + f2))}
+
+
 }

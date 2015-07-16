@@ -66,6 +66,13 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return empty if applied to empty Stream" in {
 		Stream.empty[Int].map{_ *2} should be (Stream.empty)
 	}
+	behavior of "Stream.mapWithUnfoled"
+	it should "map a function over all elements in a Stream" in {
+		ones.mapWithUnfold{i => i * 2}.take(5).toList should be (List(2,2,2,2,2))
+	}
+	it should "return empty if applied to empty Stream" in {
+		Stream.empty[Int].mapWithUnfold{_ *2} should be (Stream.empty)
+	}
 	behavior of "Stream.append"
 	it should "append two streams" in {
 		(Stream(1,2) ++ Stream(3,4)).toList should be (List(1,2,3,4))
