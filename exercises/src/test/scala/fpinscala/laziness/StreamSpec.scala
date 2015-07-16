@@ -120,4 +120,9 @@ class StreamSpec extends FlatSpec with Matchers{
 		val s = Stream.unfold(0)(_ => None)
 		s should be (Stream.empty[Int])
 	}
+	behavior of "Stream.fibs"
+	it should "eval to a fib stream" in {
+		fibs.take(7).toList should be (List(0, 1, 1, 2, 3, 5, 8))
+	}
+
 }

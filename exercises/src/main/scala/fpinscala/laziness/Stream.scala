@@ -82,5 +82,9 @@ object Stream {
     case None => Stream.empty[A]
   }
 
-  def constant[A](a: A): Stream[A] = Stream.cons(a,constant(a))
+  def constant[A](a: A): Stream[A] = unfold(a)(_ => Some(a,a))
+
+  //0, 1, 1, 2, 3, 5, 8,
+  //def fibs:Stream[Int] = unfold((0,1))(s => Some(s._1, (s._2, s._1 + s._2)))
+  def fibs:Stream[Int] = unfold((0,1)){ case (f1,f2) => Some(f1, (f2, f1 + f2))}
 }
