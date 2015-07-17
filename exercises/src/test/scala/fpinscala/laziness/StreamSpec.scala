@@ -22,6 +22,18 @@ class StreamSpec extends FlatSpec with Matchers{
 		val result = ones.take(0)
 		result.toList should be (Nil)
 	}
+	behavior of "Stream.takeViaUnfold"
+	it should "take n values" in {
+		ones.takeUnfold(5).toList should be (List(1,1,1,1,1))
+	}
+	it should "take 1 value" in {
+		val result = ones.takeUnfold(1)
+		result.toList should be (List(1))
+	}
+	it should "take 0 values" in {
+		val result = ones.takeUnfold(0)
+		result.toList should be (Nil)
+	}
 	behavior of "Stream.toList"
 	it should "convert a stream to a list" in {
 		Stream(1,2,3,4).toList should be (List(1,2,3,4))

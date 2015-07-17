@@ -61,6 +61,12 @@ trait Stream[+A] {
   def mapWithUnfold[B](f: A => B):Stream[B] = unfold(this){
     case Empty => None
     case Cons(h,t) => Some(f(h()),t())}
+
+  def takeUnfold(n: Int): Stream[A] = unfold((n,this)){
+    case (i,Cons(h,t)) if i > 1 => Some((h(),(i - 1, t())))
+    case (1,Cons(h,_))  => Some((h(),(0, Stream.empty)))
+    case _ => None
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
