@@ -72,6 +72,10 @@ trait Stream[+A] {
     case Cons(h,t) if p(h()) => Some(h(),t())
     case Cons(h,_) if !p(h()) => None
   }
+
+  def zip[B](s2: Stream[B]): Stream[(A,B)] = ???
+
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = ???
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -102,6 +106,5 @@ object Stream {
   //0, 1, 1, 2, 3, 5, 8,
   //def fibs:Stream[Int] = unfold((0,1))(s => Some(s._1, (s._2, s._1 + s._2)))
   def fibs:Stream[Int] = unfold((0,1)){ case (f1,f2) => Some(f1, (f2, f1 + f2))}
-
 
 }

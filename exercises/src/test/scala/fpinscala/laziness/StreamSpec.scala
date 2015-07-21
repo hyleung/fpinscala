@@ -91,7 +91,7 @@ class StreamSpec extends FlatSpec with Matchers{
 	it should "return empty if applied to empty Stream" in {
 		Stream.empty[Int].map{_ *2} should be (Stream.empty)
 	}
-	behavior of "Stream.mapWithUnfoled"
+	behavior of "Stream.mapWithUnfold"
 	it should "map a function over all elements in a Stream" in {
 		ones.mapWithUnfold{i => i * 2}.take(5).toList should be (List(2,2,2,2,2))
 	}
@@ -155,6 +155,31 @@ class StreamSpec extends FlatSpec with Matchers{
 	behavior of "Stream.fibs"
 	it should "eval to a fib stream" in {
 		fibs.take(7).toList should be (List(0, 1, 1, 2, 3, 5, 8))
+	}
+
+	behavior of "Stream.zip"
+	it should "zip two streams of equal length" in {
+		val s1 = Stream(1,2,3)
+		val s2 = Stream(1,2,3)
+		s1.zip(s2).toList should be (List((1,1),(2,2),(3,3)))
+	}
+	it should "zip two streams of unequal length" in {
+		val s1 = Stream(1,2,3)
+		val s2 = Stream(1,2)
+		s1.zip(s2).toList should be (List((1,1),(2,2)))
+	}
+	it should "return empty Stream if param is empty" in {
+		val s1 = Stream(1,2,3)
+		s1.zip(Stream.empty) should be (Stream.empty)
+	}
+	it should "return empty Stream if stream is empty" in {
+		val s2 = Stream(1,2,3)
+		Stream.empty.zip(s2) should be (Stream.empty)
+	}
+	it should "zip two empty streams" in {
+		val s1 = Stream.empty
+		val s2 = Stream.empty
+		s1.zip(s2) should be (Stream.empty)
 	}
 
 }
