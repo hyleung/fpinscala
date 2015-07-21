@@ -73,7 +73,11 @@ trait Stream[+A] {
     case Cons(h,_) if !p(h()) => None
   }
 
-  def zip[B](s2: Stream[B]): Stream[(A,B)] = ???
+  def zip[B](s2: Stream[B]): Stream[(A,B)] = (this,s2) match {
+    case (_, Empty) => Empty
+    case (Empty, _) => Empty
+    case (Cons(a,aa), Cons(b,bb)) => cons((a(),b()), aa().zip(bb()) )
+  }
 
   def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = ???
 }
