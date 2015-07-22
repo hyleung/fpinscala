@@ -79,7 +79,12 @@ trait Stream[+A] {
     case (Cons(a,aa), Cons(b,bb)) => cons((a(),b()), aa().zip(bb()) )
   }
 
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = ???
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = (this,s2) match {
+    case (Empty,Empty) => empty
+    case (Cons(a,aa), Empty) => cons((Some(a()), None), aa().zipAll(Empty))
+    case (Empty, Cons(b,bb)) => cons((None, Some(b())), Empty.zipAll(bb()))
+    case (Cons(a,aa), Cons(b,bb)) => cons((Some(a()),Some(b())), aa().zipAll(bb()) )
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

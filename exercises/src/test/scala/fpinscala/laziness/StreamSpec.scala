@@ -201,11 +201,15 @@ class StreamSpec extends FlatSpec with Matchers{
 	}
 	it should "return empty Stream if param is empty" in {
 		val s1 = Stream(1,2,3)
-		s1.zipAll(Stream.empty) should be (Stream.empty)
+		s1.zipAll(Stream.empty).toList should be (List(
+				(Some(1),None),
+				(Some(2),None),
+				(Some(3),None)
+		))
 	}
 	it should "return empty Stream if stream is empty" in {
 		val s2 = Stream(1,2,3)
-		Stream.empty.zipAll(s2) should be (List(
+		Stream.empty.zipAll(s2).toList should be (List(
 			(None, Some(1)),
 			(None, Some(2)),
 			(None, Some(3))))
