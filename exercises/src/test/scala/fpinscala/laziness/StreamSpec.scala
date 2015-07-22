@@ -182,4 +182,38 @@ class StreamSpec extends FlatSpec with Matchers{
 		s1.zip(s2) should be (Stream.empty)
 	}
 
+	behavior of "Stream.zipAll"
+	it should "zipAll two streams of equal length" in {
+		val s1 = Stream(1,2,3)
+		val s2 = Stream(1,2,3)
+		s1.zipAll(s2).toList should be (List(
+			(Some(1), Some(1)),
+			(Some(2), Some(2)),
+			(Some(3), Some(3))))
+	}
+	it should "zipAll two streams of unequal length" in {
+		val s1 = Stream(1,2,3)
+		val s2 = Stream(1,2)
+		s1.zipAll(s2).toList should be (List(
+			(Some(1), Some(1)),
+			(Some(2), Some(2)),
+			(Some(3), None)))
+	}
+	it should "return empty Stream if param is empty" in {
+		val s1 = Stream(1,2,3)
+		s1.zipAll(Stream.empty) should be (Stream.empty)
+	}
+	it should "return empty Stream if stream is empty" in {
+		val s2 = Stream(1,2,3)
+		Stream.empty.zipAll(s2) should be (List(
+			(None, Some(1)),
+			(None, Some(2)),
+			(None, Some(3))))
+	}
+	it should "zipAll two empty streams" in {
+		val s1 = Stream.empty
+		val s2 = Stream.empty
+		s1.zipAll(s2) should be (Stream.empty)
+	}
+
 }
