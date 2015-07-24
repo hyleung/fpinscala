@@ -247,11 +247,14 @@ class StreamSpec extends FlatSpec with Matchers{
 	}
 	behavior of "Stream.tails"
 	it should "return a stream of streams" in {
-		val s = Stream(1,2,3)
-		s.tails should be (Stream(Stream(1,2,3),Stream(2,3), Stream(3), Stream()))
+		val s = Stream(1,2,3).tails
+		val result = s.toList.map{ss => ss.toList}
+		result should be (List(List(1,2,3),List(2,3),List(3),List()))
 	}
 	it should "return an empty stream if stream is empty" in {
-		Stream.empty.tails should be (Stream.empty)
+		val s = Stream.empty.tails
+		val result = s.toList.map{ss => ss.toList}
+		result should be (List(List()))
 	}
 
 }
