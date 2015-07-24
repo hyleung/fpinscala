@@ -235,9 +235,9 @@ class StreamSpec extends FlatSpec with Matchers{
 		val s2 = Stream(1,2,3)
 		s1.startsWith(s2) should be (false)
 	}
-	it should "evaluate to false if arg is empty?" in {
+	it should "evaluate to true if arg is empty (same as List.startsWith)" in {
 		val s1 = Stream(1,2,3)
 		val s2 = Stream.empty
-		s1.startsWith(s2) should be (false)
+		s1.startsWith(s2) should be (true)
 	}
 }
