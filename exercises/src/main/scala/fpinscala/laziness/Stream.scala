@@ -89,6 +89,8 @@ trait Stream[+A] {
     case (Empty, Cons(b,bb)) => cons((None, Some(b())), Empty.zipAll(bb()))
     case (Cons(a,aa), Cons(b,bb)) => cons((Some(a()),Some(b())), aa().zipAll(bb()) )
   }
+
+  def tails: Stream[Stream[A]] = ???
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
