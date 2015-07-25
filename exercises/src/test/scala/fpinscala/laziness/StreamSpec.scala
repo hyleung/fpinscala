@@ -256,5 +256,15 @@ class StreamSpec extends FlatSpec with Matchers{
 		val result = s.toList.map{ss => ss.toList}
 		result should be (List(List()))
 	}
-
+	behavior of "Stream.tailsUnfold"
+	it should "return a stream of streams" in {
+		val s = Stream(1,2,3).tailsUnfold
+		val result = s.toList.map{ss => ss.toList}
+		result should be (List(List(1,2,3),List(2,3),List(3),List()))
+	}
+	it should "return an empty stream if stream is empty" in {
+		val s = Stream.empty.tailsUnfold
+		val result = s.toList.map{ss => ss.toList}
+		result should be (List(List()))
+	}
 }
