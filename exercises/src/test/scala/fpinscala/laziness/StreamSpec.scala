@@ -267,4 +267,13 @@ class StreamSpec extends FlatSpec with Matchers{
 		val result = s.toList.map{ss => ss.toList}
 		result should be (List(List()))
 	}
+	behavior of "Stream.scanRight"
+	it should "scan Stream from right and apply function" in {
+		val s = Stream (1,2,3)
+		s.scanRight(0)(_ + _).toList should be (List(6,5,3,0))
+	}
+	it should "return value if stream is empty" in {
+		val s = Stream.empty[Int]
+		s.scanRight(0)(_ + _).toList should be (List(0))
+	}
 }
