@@ -11,13 +11,18 @@ import org.scalatest.{Matchers, PropSpec}
  * Time: 6:00 PM
  * To change this template use File | Settings | File Templates.
  */
-class NonNegativeIntPropertySpec extends PropSpec with PropertyChecks {
+class StatePropertySpec extends PropSpec with PropertyChecks {
 	property("State.nonNegative must return a positive integer for all seeds") {
 		forAll { (seed: Long) =>
 			val (next, nextState) = RNG.nonNegativeInt(Simple(seed))
-			next >= 0 shouldBe (true)
+			next >= 0 should be (true)
 		}
-
+	}
+	property("State.double must return double between 0 and 1, not including 1") {
+		forAll { (seed: Long) =>
+			val (next, nextState) = RNG.double(Simple(seed))
+			(next < 1 & next >= 0) should be (true)
+		}
 	}
 
 }
