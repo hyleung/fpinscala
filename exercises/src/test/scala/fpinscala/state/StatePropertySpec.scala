@@ -24,5 +24,18 @@ class StatePropertySpec extends PropSpec with PropertyChecks {
 			(next < 1 & next >= 0) should be (true)
 		}
 	}
-
+	property("State.intDouble must return pairs on int and double in the expected range") {
+		forAll { (seed:Long) =>
+			val ((i,d), nextState) = RNG.intDouble(Simple(seed))
+			(i > Int.MinValue & i < Int.MaxValue) should be (true)
+			(d < 1 & d >= 0) should be (true)
+		}
+	}
+	property("State.intDouble must return pairs on int and double that are different from each other") {
+		forAll { (seed:Long) =>
+			val ((i,d), nextState) = RNG.intDouble(Simple(seed))
+			val doubleAsInt = (d * Double.MaxValue).toInt
+			i == doubleAsInt should be (false)
+		}
+	}
 }
