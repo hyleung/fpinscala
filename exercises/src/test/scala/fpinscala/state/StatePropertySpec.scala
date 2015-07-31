@@ -1,9 +1,11 @@
 package fpinscala.state
 
 import fpinscala.state.RNG.Simple
+import org.scalacheck.Gen
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
+import org.scalacheck.Prop.forAll
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,6 +14,9 @@ import org.scalatest.{Matchers, PropSpec}
  * To change this template use File | Settings | File Templates.
  */
 class StatePropertySpec extends PropSpec with PropertyChecks {
+	val smallInteger = Gen.choose(0,100)
+	val longSeed =  Gen.choose(Long.MinValue,Long.MaxValue)
+
 	property("State.nonNegative must return a positive integer for all seeds") {
 		forAll { (seed: Long) =>
 			val (next, nextState) = RNG.nonNegativeInt(Simple(seed))
@@ -65,6 +70,18 @@ class StatePropertySpec extends PropSpec with PropertyChecks {
 			val ((a,b,c), next) = RNG.double3(Simple(seed))
 			a != b should be (true)
 			b != c should be (true)
+		}
+	}
+	property("State.ints must return list of ints") {
+		forAll(longSeed, smallInteger) { (seed:Long, count:Int) =>
+			val (result, _) = RNG.ints(count)(Simple(seed))
+			result.forall{ i => i > Int.MinValue & i < Int.MaxValue} should be (true)
+		}
+	}
+	property("State.ints must return list of ints with correct length") {
+		forAll(longSeed, smallInteger) { (seed:Long, count:Int) =>
+			val (result, _) = RNG.ints(count)(Simple(seed))
+			result.size should be (count)
 		}
 	}
 }
