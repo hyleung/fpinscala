@@ -52,4 +52,19 @@ class StatePropertySpec extends PropSpec with PropertyChecks {
 			i == doubleAsInt should be(false)
 		}
 	}
+	property("State.double3 must return tuple of doubles") {
+		forAll { (seed:Long) =>
+			val ((a,b,c), next) = RNG.double3(Simple(seed))
+			(a < 1 & a >= 0) should be(true)
+			(b < 1 & b >= 0) should be(true)
+			(c < 1 & c >= 0) should be(true)
+		}
+	}
+	property("State.double3 must return tuple of unique doubles") {
+		forAll { (seed:Long) =>
+			val ((a,b,c), next) = RNG.double3(Simple(seed))
+			a != b should be (true)
+			b != c should be (true)
+		}
+	}
 }
