@@ -29,6 +29,12 @@ class StatePropertySpec extends PropSpec with PropertyChecks {
 			(next < 1 & next >= 0) should be(true)
 		}
 	}
+	property("State.doubleWithMap must return double between 0 and 1, not including 1") {
+		forAll { (seed: Long) =>
+			val (next,_) = RNG.doubleWithMap(Simple(seed))
+			(next < 1 & next >= 0) should be(true)
+		}
+	}
 	property("State.intDouble must return pairs on int and double in the expected range") {
 		forAll { (seed: Long) =>
 			val ((i, d), nextState) = RNG.intDouble(Simple(seed))
