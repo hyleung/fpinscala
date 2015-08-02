@@ -90,4 +90,11 @@ class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
 			result.size should be (count)
 		}
 	}
+	property("State.map2 should apply function to 2 Rand[A]") {
+		forAll(longSeed){ (seed:Long) =>
+			val simple: Simple = Simple(seed)
+			val (result, _) = RNG.map2(RNG.int,RNG.int)( _ + _)(simple)
+			result should (be > Int.MinValue and be < Int.MaxValue)
+		}
+	}
 }

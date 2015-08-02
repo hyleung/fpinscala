@@ -50,7 +50,7 @@ object RNG {
 
   def doubleInt(rng: RNG): ((Double,Int), RNG) = {
     val (d, s1) = double(rng)
-    val (i, s2) = s1.nextInt;
+    val (i, s2) = s1.nextInt
     ((d,i), s2)
   }
   def double3(rng: RNG): ((Double,Double,Double), RNG) = {
@@ -67,7 +67,12 @@ object RNG {
     }
   }
 
-  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a,rng0) = ra(rng)
+      val (b,rng1) = rb(rng0)
+      (f(a,b),rng1)
+    }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
