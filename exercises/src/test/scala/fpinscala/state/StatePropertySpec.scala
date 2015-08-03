@@ -1,11 +1,10 @@
 package fpinscala.state
 
-import fpinscala.state.RNG.Simple
+import fpinscala.state.RNG._
 import org.scalacheck.Gen
-import org.scalatest.matchers.ShouldMatchers
+
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{ShouldMatchers, Matchers, PropSpec}
-import org.scalacheck.Prop.forAll
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,91 +16,91 @@ class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
 	val smallInteger = Gen.choose(0,100)
 	val longSeed =  Gen.choose(Long.MinValue,Long.MaxValue)
 
-	property("State.nonNegative must return a positive integer for all seeds") {
+	property("nonNegative must return a positive integer for all seeds") {
 		forAll { (seed: Long) =>
-			val (next, nextState) = RNG.nonNegativeInt(Simple(seed))
+			val (next, nextState) = nonNegativeInt(Simple(seed))
 			next should be >= 0
 		}
 	}
-	property("State.double must return double between 0 and 1, not including 1") {
+	property("double must return double between 0 and 1, not including 1") {
 		forAll { (seed: Long) =>
-			val (next, _)  = RNG.double(Simple(seed))
+			val (next, _)  = double(Simple(seed))
 			next should (be < 1.0 and be >= 0.0)
 		}
 	}
-	property("State.doubleWithMap must return double between 0 and 1, not including 1") {
+	property("doubleWithMap must return double between 0 and 1, not including 1") {
 		forAll { (seed: Long) =>
-			val (next,_) = RNG.doubleWithMap(Simple(seed))
+			val (next,_) = doubleWithMap(Simple(seed))
 			next should (be < 1.0 and be >= 0.0)
 		}
 	}
-	property("State.intDouble must return pairs on int and double in the expected range") {
+	property("intDouble must return pairs on int and double in the expected range") {
 		forAll { (seed: Long) =>
-			val ((i, d), nextState) = RNG.intDouble(Simple(seed))
+			val ((i, d), nextState) = intDouble(Simple(seed))
 			i should (be > Int.MinValue and be < Int.MaxValue)
 			d should (be < 1.0 and be >= 0.0)
 		}
 	}
-	property("State.intDouble must return pairs on int and double that are different from each other") {
+	property("intDouble must return pairs on int and double that are different from each other") {
 		forAll { (seed: Long) =>
-			val ((i, d), nextState) = RNG.intDouble(Simple(seed))
+			val ((i, d), nextState) = intDouble(Simple(seed))
 			val doubleAsInt = (d * Double.MaxValue).toInt
 			i should (not equal doubleAsInt)
 		}
 	}
-	property("State.doubleInt must return pairs on double and int in the expected range") {
+	property("doubleInt must return pairs on double and int in the expected range") {
 		forAll { (seed: Long) =>
-			val ((d, i), nextState) = RNG.doubleInt(Simple(seed))
+			val ((d, i), nextState) = doubleInt(Simple(seed))
 			i should (be > Int.MinValue and be < Int.MaxValue)
 			d should (be < 1.0 and be >= 0.0)
 		}
 	}
-	property("State.doubleInt must return pairs on double and int that are different from each other") {
+	property("doubleInt must return pairs on double and int that are different from each other") {
 		forAll { (seed: Long) =>
-			val ((d, i), nextState) = RNG.doubleInt(Simple(seed))
+			val ((d, i), nextState) = doubleInt(Simple(seed))
 			val doubleAsInt = (d * Double.MaxValue).toInt
 			i should (not equal doubleAsInt)
 		}
 	}
-	property("State.double3 must return tuple of doubles") {
+	property("double3 must return tuple of doubles") {
 		forAll { (seed:Long) =>
-			val ((a,b,c), next) = RNG.double3(Simple(seed))
+			val ((a,b,c), next) = double3(Simple(seed))
 			a should (be < 1.0 and be >= 0.0)
 			b should (be < 1.0 and be >= 0.0)
 			c should (be < 1.0 and be >= 0.0)
 		}
 	}
-	property("State.double3 must return tuple of unique doubles") {
+	property("double3 must return tuple of unique doubles") {
 		forAll { (seed:Long) =>
-			val ((a,b,c), next) = RNG.double3(Simple(seed))
+			val ((a,b,c), next) = double3(Simple(seed))
 			a should (not equal b)
 			b should (not equal c)
 		}
 	}
-	property("State.ints must return list of ints") {
+	property("ints must return list of ints") {
 		forAll(longSeed, smallInteger) { (seed:Long, count:Int) =>
-			val (result, _) = RNG.ints(count)(Simple(seed))
+			val (result, _) = ints(count)(Simple(seed))
 			result.forall{ i => i > Int.MinValue & i < Int.MaxValue} should be (true)
 		}
 	}
-	property("State.ints must return list of ints with correct length") {
+	property("ints must return list of ints with correct length") {
 		forAll(longSeed, smallInteger) { (seed:Long, count:Int) =>
-			val (result, _) = RNG.ints(count)(Simple(seed))
+			val (result, _) = ints(count)(Simple(seed))
 			result.size should be (count)
 		}
 	}
-	property("State.map2 should apply function to 2 Rand[A]") {
+	property("map2 should apply function to 2 Rand[A]") {
 		forAll(longSeed){ (seed:Long) =>
 			val simple: Simple = Simple(seed)
-			val (result, _) = RNG.map2(RNG.int,RNG.int)( _ + _)(simple)
+			val (result, _) = map2(int,int)( _ + _)(simple)
 			result should (be > Int.MinValue and be < Int.MaxValue)
 		}
 	}
-	property("State.sequence should evaluate list of Rand[A]") {
+	property("sequence should evaluate list of Rand[A]") {
 		forAll(longSeed){(seed:Long) =>
 			val initialState = Simple(seed)
-			val list = List(RNG.int, RNG.int, RNG.int, RNG.int)
-			val (result, _) = RNG.sequence(list)(initialState)
+			val list = List(int, int, int, int)
+			val (result, _) = sequence(list)(initialState)
 			result should have length 4
 		}
 	}
