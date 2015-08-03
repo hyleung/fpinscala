@@ -74,7 +74,15 @@ object RNG {
       (f(a,b),rng1)
     }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    rng => {
+      fs.foldLeft((List.empty[A], rng)){ (a,b) =>
+          val r = a._2
+          val acc = a._1
+          val (v,next) = b(r)
+          (acc :+ v, next)
+      }
+    }
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 }

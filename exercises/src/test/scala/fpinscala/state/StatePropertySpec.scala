@@ -97,4 +97,12 @@ class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
 			result should (be > Int.MinValue and be < Int.MaxValue)
 		}
 	}
+	property("State.sequence should evaluate list of Rand[A]") {
+		forAll(longSeed){(seed:Long) =>
+			val initialState = Simple(seed)
+			val list = List(RNG.int, RNG.int, RNG.int, RNG.int)
+			val (result, _) = RNG.sequence(list)(initialState)
+			result should have length 4
+		}
+	}
 }
