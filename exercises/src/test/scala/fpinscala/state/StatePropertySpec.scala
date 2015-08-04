@@ -13,7 +13,7 @@ import org.scalatest.{ShouldMatchers, Matchers, PropSpec}
  * To change this template use File | Settings | File Templates.
  */
 class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
-	val smallInteger = Gen.choose(0,100)
+	val smallInteger = Gen.choose(1,100)
 	val longSeed =  Gen.choose(Long.MinValue,Long.MaxValue)
 
 	property("nonNegative must return a positive integer for all seeds") {
@@ -102,6 +102,19 @@ class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
 			val list = List(int, int, int, int)
 			val (result, _) = sequence(list)(initialState)
 			result should have length 4
+		}
+	}
+	property("positiveLessThan should return Ints less than the argument") {
+		def positiveLessThan(n:Int):Rand[Int] = {
+			flatMap(nonNegativeInt){ i =>
+				val mod = i % n
+				if (i + (n - 1) - mod > 0) unit(mod) else positiveLessThan(n)
+			}
+		}
+		forAll(longSeed, smallInteger){(seed:Long, n:Int) =>
+			val initialState = Simple(seed)
+			val (result, _ ) = positiveLessThan(n)(initialState)
+			result should be < n
 		}
 	}
 }
