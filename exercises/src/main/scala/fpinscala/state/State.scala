@@ -30,6 +30,9 @@ object RNG {
       (f(a), rng2)
     }
 
+  def _map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s){a => unit(f(a))}
+
   def nonNegativeInt(rng: RNG): (Int, RNG) = rng.nextInt match {
     case (next,nextState) if next < 0  => (-(next + 1), nextState)
     case p => p
@@ -74,15 +77,23 @@ object RNG {
       (f(a,b),rng1)
     }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A])){ (f,acc) =>
-      map2(f,acc)( (x,xs) => x :: xs)
-    }
+  def _map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a =>
+      flatMap(rb)(b =>
+        unit(f(a,b))
+      )
+    )
 
   def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
     val (x, next) = f(rng)
     g(x)(next)
   }
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List.empty[A])){ (f,acc) =>
+      map2(f,acc)( (x,xs) => x :: xs)
+    }
+
 }
 
 case class State[S,+A](run: S => (A, S)) {

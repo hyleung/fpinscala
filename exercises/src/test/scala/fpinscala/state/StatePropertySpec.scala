@@ -89,10 +89,34 @@ class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
 			result.size should be (count)
 		}
 	}
+
+	property("map should apply function") {
+		forAll(longSeed){ (seed:Long) =>
+			val simple: Simple = Simple(seed)
+			val (result, _) = map(int)(a => a * a)(simple)
+			result should (be > Int.MinValue and be < Int.MaxValue)
+		}
+	}
+
+	property("_map should apply function") {
+		forAll(longSeed){ (seed:Long) =>
+			val simple: Simple = Simple(seed)
+			val (result, _) = _map(int)(a => a * a)(simple)
+			result should (be > Int.MinValue and be < Int.MaxValue)
+		}
+	}
+
 	property("map2 should apply function to 2 Rand[A]") {
 		forAll(longSeed){ (seed:Long) =>
 			val simple: Simple = Simple(seed)
 			val (result, _) = map2(int,int)( _ + _)(simple)
+			result should (be > Int.MinValue and be < Int.MaxValue)
+		}
+	}
+	property("_map2 should apply function to 2 Rand[A]") {
+		forAll(longSeed){ (seed:Long) =>
+			val simple: Simple = Simple(seed)
+			val (result, _) = _map2(int,int)( _ + _)(simple)
 			result should (be > Int.MinValue and be < Int.MaxValue)
 		}
 	}
