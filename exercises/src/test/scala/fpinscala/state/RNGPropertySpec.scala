@@ -12,7 +12,7 @@ import org.scalatest.{ShouldMatchers, Matchers, PropSpec}
  * Time: 6:00 PM
  * To change this template use File | Settings | File Templates.
  */
-class StatePropertySpec extends PropSpec with PropertyChecks with Matchers{
+class RNGPropertySpec extends PropSpec with PropertyChecks with Matchers{
 	val smallInteger = Gen.choose(1,100)
 	val longSeed =  Gen.choose(Long.MinValue,Long.MaxValue)
 
