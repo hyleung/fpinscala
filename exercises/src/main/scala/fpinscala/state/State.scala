@@ -100,10 +100,16 @@ case class State[S,+A](run: S => (A, S)) {
   def map[B](f: A => B): State[S, B] = flatMap(a => State.unit(f(a)))
 
   def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
-    sys.error("todo")
+    flatMap{a => sb.map { b => f(a, b) }}
+
   def flatMap[B](f: A => State[S, B]): State[S, B] =
     State{ (s:S) =>
+      //get the value of type A and next state B
       val (a, s1) = run(s)
+      /* f(a) returns a function A => State[S,B]
+         so we need to evaluate the function to
+         get an actual State[S,B]
+       */
       f(a).run(s1)
     }
 }

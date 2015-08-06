@@ -22,4 +22,11 @@ class StateSpec extends FlatSpec with Matchers{
 		val (result,_) = s.map(_ * 2).run(Simple(100))
 		result should (be < Int.MaxValue and be > Int.MinValue)
 	}
+	behavior of "State.map2"
+	it should "map 2 State" in {
+		val s1 = State(int)
+		val s2 = State(int)
+		val (result, _) = s1.map2(s2){(a,b) => a + b}.run(Simple(100))
+		result should (be < Int.MaxValue and be > Int.MinValue)
+	}
 }
