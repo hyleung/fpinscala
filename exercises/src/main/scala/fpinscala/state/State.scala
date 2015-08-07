@@ -126,8 +126,8 @@ object State {
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
     State{ s:Machine =>
         val r = inputs.foldLeft(s){
+          case (m, _) if m.candies == 0 => m
           case (Machine(true, candies, coins), Coin) => Machine(false, candies - 1, coins + 1)
-          case (Machine(false, 0, coins), Coin) => Machine(false, 0, coins)
           case (Machine(false, candies, coins), Coin) => Machine(false, candies, coins)
           case _ => ???
         }
