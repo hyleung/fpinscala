@@ -123,5 +123,14 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 object State {
   def unit[S, A](a: A): State[S, A] = State{s:S => (a,s)}
   type Rand[A] = State[RNG, A]
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+    State{ s:Machine =>
+        val r = inputs.foldLeft(s){
+          case (Machine(true, candies, coins), Coin) => Machine(false, candies - 1, coins + 1)
+          case (Machine(false, 0, coins), Coin) => Machine(false, 0, coins)
+          case (Machine(false, candies, coins), Coin) => Machine(false, candies, coins)
+          case _ => ???
+        }
+      ((r.candies, r.coins), r)
+    }
 }
