@@ -1,6 +1,6 @@
 package fpinscala.state
 
-import org.scalatest.{FlatSpec, GivenWhenThen, FeatureSpec, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 import State.simulateMachine
 /**
  * Created with IntelliJ IDEA.
@@ -30,20 +30,20 @@ class MachineSpec extends FlatSpec with Matchers {
 	"Turning the knob on an unlocked machine" should "cause it to dispense candy and become locked." in {
 		val initialCount = 1
 		val m = Machine(locked = false, initialCount, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Turn)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Turn)).run(m)
 		nextState.locked should be (true)
 		candies should be (initialCount - 1)
 	}
 	"Turning the knob on a locked machine" should "do nothing." in {
 		val m = Machine(locked = true, 1, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Turn)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Turn)).run(m)
 		nextState.locked should be (true)
 		nextState.candies should be (1)
 		nextState.coins should be (10)
 	}
 	"Inserting a coin into an unlocked machine" should "do not change locked state" in {
 		val m = Machine(locked = false, 1, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Coin)).run(m)
 		nextState.locked should be (false)
 	}
 	"Inserting a coin into an unlocked machine" should "do not dispense candy" in {
@@ -54,25 +54,32 @@ class MachineSpec extends FlatSpec with Matchers {
 	"Inserting a coin into an unlocked machine" should "increment number of coins" in {
 		val expected = 10
 		val m = Machine(locked = false, 1, expected)
-		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Coin)).run(m)
 		nextState.coins should be (expected + 1)
 	}
 	"A machine that is out of candy" should  "ignore Coin inputs." in {
 		val m = Machine(locked = true, 0, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Coin)).run(m)
 		nextState.locked should be (true)
 	}
 	"A machine that is out of candy" should  "ignore Turn inputs." in {
 		val m = Machine(locked = false, 0, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Turn)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Turn)).run(m)
 		nextState.candies should be (0)
 		nextState.coins should be (10)
 	}
 	"An unlocked machine that is out of candy" should  "ignore Coin inputs." in {
 		val m = Machine(locked = false, 0, 10)
-		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
+		val ((candies, _), nextState) = simulateMachine(List(Coin)).run(m)
 		nextState.candies should be (0)
 		nextState.coins should be (10)
+	}
+	"A machine with 10 coins and 5 candies" should "have 14 coins and 1 candy after 4 candies are bought" in {
+		val m = Machine(locked = true, 5, 10)
+		val commands = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)
+		val ((candies, coins), nextState) = simulateMachine(commands).run(m)
+		candies should be (1)
+		coins should be (14)
 	}
 
 
