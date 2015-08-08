@@ -15,6 +15,18 @@ class MachineSpec extends FlatSpec with Matchers {
 		val ((_, _), nextState) = simulateMachine(List(Coin)).run(m)
 		nextState.locked should be (false)
 	}
+	"Inserting a coin into a locked machine" should "not dispense any candy" in {
+		val expected = 1
+		val m = Machine(locked = true, expected, 10)
+		val ((_, _), nextState) = simulateMachine(List(Coin)).run(m)
+		nextState.candies should be (expected)
+	}
+	"Inserting a coin into a locked machine" should "increment the number of coins" in {
+		val expected  = 10
+		val m = Machine(locked = true, 1, expected)
+		val ((_, _), nextState) = simulateMachine(List(Coin)).run(m)
+		nextState.coins should be (expected + 1)
+	}
 	"Turning the knob on an unlocked machine" should "cause it to dispense candy and become locked." in {
 		val initialCount = 1
 		val m = Machine(locked = false, initialCount, 10)
@@ -29,12 +41,21 @@ class MachineSpec extends FlatSpec with Matchers {
 		nextState.candies should be (1)
 		nextState.coins should be (10)
 	}
-	"Inserting a coin into an unlocked machine" should "do nothing" in {
+	"Inserting a coin into an unlocked machine" should "do not change locked state" in {
 		val m = Machine(locked = false, 1, 10)
 		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
 		nextState.locked should be (false)
+	}
+	"Inserting a coin into an unlocked machine" should "do not dispense candy" in {
+		val m = Machine(locked = false, 1, 10)
+		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
 		nextState.candies should be (1)
-		nextState.coins should be (10)
+	}
+	"Inserting a coin into an unlocked machine" should "increment number of coins" in {
+		val expected = 10
+		val m = Machine(locked = false, 1, expected)
+		val ((candies, _), nextState) = State.simulateMachine(List(Coin)).run(m)
+		nextState.coins should be (expected + 1)
 	}
 	"A machine that is out of candy" should  "ignore Coin inputs." in {
 		val m = Machine(locked = true, 0, 10)

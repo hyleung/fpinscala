@@ -127,8 +127,10 @@ object State {
     State{ s:Machine =>
         val r = inputs.foldLeft(s){
           case (m, _) if m.candies == 0 => m
-          case (Machine(true, candies, coins), Coin) => Machine(false, candies - 1, coins + 1)
-          case (Machine(false, candies, coins), Coin) => Machine(false, candies, coins)
+          case (m, Turn) if m.locked => m
+          case (Machine(true, candies, coins), Coin) => Machine(false, candies, coins + 1)
+          case (Machine(false, candies, coins), Coin) => Machine(false, candies, coins + 1)
+          case (Machine(false, candies, coins), Turn) => Machine(true, candies - 1, coins)
           case _ => ???
         }
       ((r.candies, r.coins), r)
