@@ -62,5 +62,11 @@ object Examples {
       val (l,r) = ints.splitAt(ints.length/2) // Divide the sequence in half using the `splitAt` function.
       sum(l) + sum(r) // Recursively sum both halves and add the results together.
     }
-
+  def sumPar(ints: IndexedSeq[Int]):Par[Int]  =
+    if (ints.size <= 1)
+        unit(ints.headOption getOrElse 0)
+    else {
+      val (l,r) = ints.splitAt(ints.length/2)
+      map2(fork(sumPar(l)), fork(sumPar(r)))(_ + _)
+    }
 }
