@@ -43,4 +43,11 @@ class ParSpec extends FlatSpec with Matchers{
 		val parSum = Examples.sumPar(list)
 		Par.run(executor)(parSum).get(50, TimeUnit.MILLISECONDS)  should be (100)
 	}
+	behavior of "asyncF"
+	it should "convert any A => B to a Par[B]" in {
+		val f = (a:Int) => s"Hello $a"
+		val async = Par.asyncF(f)
+		val executor = new ForkJoinPool()
+		Par.run(executor)(async(10)).get() should be ("Hello 10")
+	}
 }
