@@ -51,6 +51,9 @@ class ParSpec extends FlatSpec with Matchers{
 	it should "run" in {
 		unit(1).run(executor).get should be (1)
 	}
+	it should "fork" in {
+		unit(1).fork.run(executor).get should be (1)
+	}
 	it should "allow map" in {
 		unit(1).map(_.toString).run(executor).get() should be ("1")
 	}
