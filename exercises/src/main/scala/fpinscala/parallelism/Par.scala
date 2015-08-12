@@ -50,8 +50,8 @@ object Par {
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 
   class ParOps[A](p: Par[A]) {
-
-
+    def map[B](f: A => B):Par[B] = Par.map(p)(f)
+    def run(executor:ExecutorService):Future[A] = Par.run(executor)(p)
   }
 }
 
