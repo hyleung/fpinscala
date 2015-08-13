@@ -51,6 +51,7 @@ object Par {
 
   class ParOps[A](p: Par[A]) {
     def map[B](f: A => B):Par[B] = Par.map(p)(f)
+    def map2[B,C](pb:Par[B])(f:(A,B) => C):Par[C] = Par.map2(p,pb)(f)
     def fork:Par[A] = Par.fork(p)
     def run(executor:ExecutorService):Future[A] = Par.run(executor)(p)
   }

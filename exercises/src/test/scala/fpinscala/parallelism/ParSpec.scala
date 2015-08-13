@@ -57,5 +57,11 @@ class ParSpec extends FlatSpec with Matchers{
 	it should "allow map" in {
 		unit(1).map(_.toString).run(executor).get() should be ("1")
 	}
+	it should "allow ma2" in {
+		unit(1)
+			.map2(unit(2))((a,b) => a + b)
+			.run(executor).get() should be (3)
+	}
+
 
 }
