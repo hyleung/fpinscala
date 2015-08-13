@@ -47,6 +47,12 @@ class ParSpec extends FlatSpec with Matchers{
 		val async = Par.asyncF(f)
 		Par.run(executor)(async(10)).get() should be ("Hello 10")
 	}
+	behavior of "lazyUnit"
+	it should "create a lazy evaluated unit" in {
+		val u = Par.lazyUnit(() => 1)
+		Par.run(executor)(u).get() should be (1)
+	}
+
 	behavior of "ParOps infix operators"
 	it should "run" in {
 		unit(1).run(executor).get should be (1)
@@ -57,11 +63,12 @@ class ParSpec extends FlatSpec with Matchers{
 	it should "allow map" in {
 		unit(1).map(_.toString).run(executor).get() should be ("1")
 	}
-	it should "allow ma2" in {
+	it should "allow map2" in {
 		unit(1)
 			.map2(unit(2))((a,b) => a + b)
 			.run(executor).get() should be (3)
 	}
-
-
+	it should "allow equal" in {
+		unit(1).equal(unit(1))(executor) should be (true)
+	}
 }
