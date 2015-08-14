@@ -48,6 +48,8 @@ object Par {
 
   def asyncF[A,B](f: A => B): A => Par[B] = (a:A) => lazyUnit(f(a))
 
+  def sequence[A](l: List[Par[A]]):Par[List[A]] = l.foldLeft(unit(List[A]()))((pacc,pa) => map2(pacc,pa)((a,acc) => a :+ acc))
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 

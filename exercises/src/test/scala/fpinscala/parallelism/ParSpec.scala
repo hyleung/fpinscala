@@ -49,7 +49,7 @@ class ParSpec extends FlatSpec with Matchers{
 	}
 	behavior of "lazyUnit"
 	it should "create a lazy evaluated unit" in {
-		val u = Par.lazyUnit(() => 1)
+		val u = Par.lazyUnit(1)
 		Par.run(executor)(u).get() should be (1)
 	}
 
@@ -70,5 +70,12 @@ class ParSpec extends FlatSpec with Matchers{
 	}
 	it should "allow equal" in {
 		unit(1).equal(unit(1))(executor) should be (true)
+	}
+
+	behavior of "sequence"
+	it should "sequence a list of Par[A]" in {
+		val l = List(unit(1),unit(2),unit(3))
+		val p = Par.sequence(l)
+		p.run(executor).get() should be (List(1,2,3))
 	}
 }
