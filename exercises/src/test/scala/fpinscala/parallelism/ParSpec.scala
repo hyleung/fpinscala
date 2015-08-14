@@ -78,4 +78,11 @@ class ParSpec extends FlatSpec with Matchers{
 		val p = Par.sequence(l)
 		p.run(executor).get() should be (List(1,2,3))
 	}
+
+	behavior of "parMap"
+	it should "parallelize application of function to sequence of A" in {
+		val l = List(1,2,3)
+		val p = Par.parMap(l)(_ * 2)
+		p.run(executor).get() should be (List(2,4,6))
+	}
 }
