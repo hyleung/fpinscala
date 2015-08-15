@@ -55,6 +55,13 @@ object Par {
     sequence(fbs)
   }
 
+  def parFilter[A](l: List[A])(f: A => Boolean): Par[List[A]] =  {
+    val pars: List[Par[List[A]]] =
+      l.map(asyncF((a:A) => if (f(a)) List(a) else List()))
+    val seq = sequence(pars) //convert to Par[List[List[A]]]
+    seq.map( sl => sl.flatten ) // convert each List[List[A]] into List[A]
+  }
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 

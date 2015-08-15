@@ -85,4 +85,11 @@ class ParSpec extends FlatSpec with Matchers{
 		val p = Par.parMap(l)(_ * 2)
 		p.run(executor).get() should be (List(2,4,6))
 	}
+
+	behavior of "parFilter"
+	it should "apply filter predicate to a sequence of A in parallel" in {
+		val l = Range(1,11).toList
+		val p = Par.parFilter(l)(_ % 2 == 0)
+		p.run(executor).get() should be (List(2,4,6,8,10))
+	}
 }
