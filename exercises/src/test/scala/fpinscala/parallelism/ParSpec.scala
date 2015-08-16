@@ -92,4 +92,13 @@ class ParSpec extends FlatSpec with Matchers{
 		val p = Par.parFilter(l)(_ % 2 == 0)
 		p.run(executor).get() should be (List(2,4,6,8,10))
 	}
+
+	behavior of "Par.map3"
+	it should "map function over 3 Par" in {
+		val p1 = unit(1)
+		val p2 = unit(2)
+		val p3 = unit(3)
+		val p = Par.map3(p1, p2, p3)((a,b,c) => a + b +c)
+		p.run(executor).get() should be (6)
+	}
 }
