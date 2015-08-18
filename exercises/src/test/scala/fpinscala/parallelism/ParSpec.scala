@@ -122,4 +122,18 @@ class ParSpec extends FlatSpec with Matchers{
 		val result = Par.choiceN(unit(2))(l)
 		result.run(executor).get() should be(3)
 	}
+
+	behavior of "Par._choice"
+	it should "return first param if predicate evaluates to true" in {
+		val a = unit(1)
+		val b = unit(2)
+		val result = Par._choice(unit(true))(a,b)
+		result.run(executor).get()  should be (1)
+	}
+	it should "return second param if predicate evaluates to false" in {
+		val a = unit(1)
+		val b = unit(2)
+		val result = Par._choice(unit(false))(a,b)
+		result.run(executor).get()  should be (2)
+	}
 }
