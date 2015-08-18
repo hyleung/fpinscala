@@ -101,4 +101,25 @@ class ParSpec extends FlatSpec with Matchers{
 		val p = Par.map3(p1, p2, p3)((a,b,c) => a + b +c)
 		p.run(executor).get() should be (6)
 	}
+
+	behavior of "Par.choice"
+	it should "return first param if predicate evaluates to true" in {
+		val a = unit(1)
+		val b = unit(2)
+		val result = Par.choice(unit(true))(a,b)
+		result.run(executor).get()  should be (1)
+	}
+	it should "return second param if predicate evaluates to false" in {
+		val a = unit(1)
+		val b = unit(2)
+		val result = Par.choice(unit(false))(a,b)
+		result.run(executor).get()  should be (2)
+	}
+
+	behavior of "Par.choiceN"
+	it should "return the Nth value" in {
+		val l = List(unit(1),unit(2),unit(3),unit(4))
+		val result = Par.choiceN(unit(2))(l)
+		result.run(executor).get() should be(3)
+	}
 }

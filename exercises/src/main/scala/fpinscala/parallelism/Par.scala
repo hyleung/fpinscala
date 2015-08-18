@@ -66,6 +66,12 @@ object Par {
     seq.map( sl => sl.flatten ) // convert each List[List[A]] into List[A]
   }
 
+  def choiceN[A](a: Par[Int])(choices: List[Par[A]]): Par[A] =
+    es => {
+      val i = a(es).get()
+      choices(i)(es)
+    }
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 
