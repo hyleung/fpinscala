@@ -136,4 +136,12 @@ class ParSpec extends FlatSpec with Matchers{
 		val result = Par._choice(unit(false))(a,b)
 		result.run(executor).get()  should be (2)
 	}
+
+	behavior of "Par.choiceMap"
+	it should "return the value from the Par[A] associated with the key" in {
+		val choices = Map("one" -> unit(1), "two" -> unit(2), "three" -> unit(3))
+		val pk =  unit("two")
+		val result = Par.choiceMap(pk)(choices)
+		result.run(executor).get() should be (2)
+	}
 }
