@@ -144,4 +144,18 @@ class ParSpec extends FlatSpec with Matchers{
 		val result = Par.choiceMap(pk)(choices)
 		result.run(executor).get() should be (2)
 	}
+	behavior of "Par.chooser"
+	it should "return allow implementation of choiceN" in {
+		val l = List(unit(1),unit(2),unit(3),unit(4))
+		val pa = unit(1)
+		val result = Par.chooser(pa)(l)
+		result.run(executor).get() should be (2)
+	}
+	it should "return allow implementation of choice" in {
+		val l = asyncF((a:Boolean) => if (a) "yay!" else "boo!" )
+		val pa = unit(true)
+		val result = Par.chooser(pa)(l)
+		result.run(executor).get() should be ("yay!")
+	}
+
 }
