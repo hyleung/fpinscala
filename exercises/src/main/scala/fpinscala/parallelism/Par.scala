@@ -76,7 +76,7 @@ object Par {
     es => {
       choices(a(es).get())(es)
     }
-  def chooser[A,B](pa:Par[A])(choices: A => Par[B]):Par[B]  =
+  def flatMap[A,B](pa:Par[A])(choices: A => Par[B]):Par[B]  =
     es => {
       choices(pa(es).get())(es)
     }
@@ -90,6 +90,7 @@ object Par {
   class ParOps[A](p: Par[A]) {
     def map[B](f: A => B):Par[B] = Par.map(p)(f)
     def map2[B,C](pb:Par[B])(f:(A,B) => C):Par[C] = Par.map2(p,pb)(f)
+    def flatMap[B](f: A => Par[B]):Par[B] = Par.flatMap(p)(f)
     def equal(pa:Par[A])(e:ExecutorService):Boolean = Par.equal(e)(p, pa)
     def fork:Par[A] = Par.fork(p)
     def run(executor:ExecutorService):Future[A] = Par.run(executor)(p)
