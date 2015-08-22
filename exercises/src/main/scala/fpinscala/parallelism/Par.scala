@@ -84,6 +84,9 @@ object Par {
   def _choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
     choiceN(map(cond)(b => if (b) 0 else 1))(List(t, f))
 
+  def join[A](ppa: Par[Par[A]]):Par[A] =
+    ppa.flatMap(pa => pa)
+
   /* Gives us infix syntax for `Par`. */
   implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 

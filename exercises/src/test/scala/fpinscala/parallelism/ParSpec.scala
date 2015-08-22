@@ -169,4 +169,9 @@ class ParSpec extends FlatSpec with Matchers{
 		val result = pa.flatMap(l)
 		result.run(executor).get() should be ("yay!")
 	}
+	behavior of "Par.join"
+	it should "join two Par computations" in {
+		val ppa = unit(unit(1))
+		Par.join(ppa)(executor).get() should be (1)
+	}
 }
