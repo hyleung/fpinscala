@@ -122,6 +122,9 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object State {
   def unit[S, A](a: A): State[S, A] = State{s:S => (a,s)}
+  def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] =
+    sas.foldRight(unit[S,List[A]](List.empty))((s,acc) => s.map2(acc)((a,b) => a :: b) )
+
   type Rand[A] = State[RNG, A]
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
     State{ s:Machine =>
