@@ -34,6 +34,8 @@ object Gen {
 }
 
 case class Gen[A](sample: State[RNG,A]) {
+  def flatMap[B](f: A => Gen[B]): Gen[B] =
+    Gen(this.sample.flatMap(a => f(a).sample))
 
 }
 

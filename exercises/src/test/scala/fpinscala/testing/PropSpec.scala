@@ -36,5 +36,11 @@ class PropSpec extends FlatSpec with Matchers{
 		v should have length 10
 		v should be (List.fill(10)(1))
 	}
-
+	behavior of "Gen.flatMap"
+	it should "flatMap" in {
+		val a = Gen.unit(1)
+		val b = a.flatMap(n => Gen.unit(s"We're number $n!"))
+		val (v,_) = b.sample.run(Simple(1l))
+		v should be ("We're number 1!")
+	}
 }
