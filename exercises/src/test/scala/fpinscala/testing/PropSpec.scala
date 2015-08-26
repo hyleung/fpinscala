@@ -31,7 +31,7 @@ class PropSpec extends FlatSpec with Matchers{
 	}
 	behavior of "Gen.listOfN"
 	it should "produce list of N size" in {
-		val l = Gen.listOfN(10,Gen.unit(1))
+		val l = Gen.unit(1).listOfN(10)
 		val (v,_) = l.sample.run(Simple(1l))
 		v should have length 10
 		v should be (List.fill(10)(1))

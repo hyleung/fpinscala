@@ -29,14 +29,13 @@ object Gen {
   def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
   def boolean:Gen[Boolean] =
     Gen(State(RNG.int).map(i => if (i % 2==0) true else false))
-  def listOfN[A](n:Int, g:Gen[A]):Gen[List[A]] =
-    Gen(State.sequence(List.fill(n)(g.sample)))
 }
 
 case class Gen[A](sample: State[RNG,A]) {
   def flatMap[B](f: A => Gen[B]): Gen[B] =
     Gen(this.sample.flatMap(a => f(a).sample))
-
+  def listOfN(n:Int):Gen[List[A]] =
+    Gen(State.sequence(List.fill(n)(sample)))
 }
 
 //trait Gen[A] {
