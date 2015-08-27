@@ -29,6 +29,8 @@ object Gen {
   def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
   def boolean:Gen[Boolean] =
     Gen(State(RNG.int).map(i => if (i % 2==0) true else false))
+  def sameParity(from: Int, to: Int): Gen[(Int,Int)] =
+    choose(from, to).listOfN(2).flatMap(l => unit(l.head,l.drop(1).head))
 }
 
 case class Gen[A](sample: State[RNG,A]) {

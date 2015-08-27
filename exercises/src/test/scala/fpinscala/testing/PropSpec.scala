@@ -43,4 +43,11 @@ class PropSpec extends FlatSpec with Matchers{
 		val (v,_) = b.sample.run(Simple(1l))
 		v should be ("We're number 1!")
 	}
+	behavior of "Gen.sameParity"
+	it should "generate pairs in range" in {
+		val ((a,b),_) = Gen.sameParity(1,10).sample.run(Simple(1l))
+		a should (be >=1 and be <= 10)
+		b should (be >=1 and be <= 10)
+	}
+
 }
