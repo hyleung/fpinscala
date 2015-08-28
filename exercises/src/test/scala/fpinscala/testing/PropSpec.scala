@@ -49,5 +49,12 @@ class PropSpec extends FlatSpec with Matchers{
 		a should (be >=1 and be <= 10)
 		b should (be >=1 and be <= 10)
 	}
-
+	behavior of "Gen union"
+	it should "generate a value" in {
+		val g1 = Gen.unit(1)
+		val g2 = Gen.unit(2)
+		val r = Gen.union(g1, g2)
+		val (v,_) = r.sample.run(Simple(1l))
+		v should (be (1) or be (2))
+	}
 }
