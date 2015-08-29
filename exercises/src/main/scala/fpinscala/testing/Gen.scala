@@ -1,6 +1,7 @@
 package fpinscala.testing
 
 import fpinscala.laziness.Stream
+import fpinscala.state.RNG.Simple
 import fpinscala.state._
 import fpinscala.parallelism._
 import fpinscala.parallelism.Par.Par
@@ -32,6 +33,10 @@ object Gen {
   def sameParity(from: Int, to: Int): Gen[(Int,Int)] =
     choose(from, to).listOfN(2).flatMap(l => unit(l.head,l.drop(1).head))
   def union[A](g1: Gen[A], g2:Gen[A]):Gen[A] = boolean.flatMap( b => if (b) g1 else g2)
+  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)):Gen[A] =
+    Gen(State(RNG.double)
+        .map{ d => if (d <= g1._2) g1 else g2})
+        .flatMap( g => g._1)
 }
 
 case class Gen[A](sample: State[RNG,A]) {

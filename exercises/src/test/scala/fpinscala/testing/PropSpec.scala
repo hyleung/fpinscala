@@ -57,4 +57,26 @@ class PropSpec extends FlatSpec with Matchers{
 		val (v,_) = r.sample.run(Simple(1l))
 		v should (be (1) or be (2))
 	}
+	behavior of "Gen.weighted"
+	it should "return g1 Gen[A] with weight 1" in {
+		val g1 = Gen.unit(1)
+		val g2 = Gen.unit(2)
+		val r = Gen.weighted((g1,1),(g2,0))
+		val (v,_) = r.sample.run(Simple(1l))
+		v should be (1)
+ 	}
+	it should "return g2 Gen[A] with weight 1" in {
+		val g1 = Gen.unit(1)
+		val g2 = Gen.unit(2)
+		val r = Gen.weighted((g1,0),(g2,1))
+		val (v,_) = r.sample.run(Simple(1l))
+		v should be (2)
+	}
+	it should "return Gen[A] with even weighting" in {
+		val g1 = Gen.unit(1)
+		val g2 = Gen.unit(2)
+		val r = Gen.weighted((g1,0.5),(g2,0.5))
+		val (v,_) = r.sample.run(Simple(1l))
+		v should (be (2) or be (1))
+	}
 }
