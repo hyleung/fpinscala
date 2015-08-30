@@ -9,7 +9,7 @@ import org.scalatest.{Matchers, FlatSpec}
  * Time: 10:04 PM
  * To change this template use File | Settings | File Templates.
  */
-class PropSpec extends FlatSpec with Matchers{
+class GenSpec extends FlatSpec with Matchers{
 	behavior of "Gen.choose"
 	it should "produce a number between 1 and 10" in {
 		val choose = Gen.choose(1,10)
