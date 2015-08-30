@@ -14,13 +14,28 @@ The library developed in this chapter goes through several iterations. This file
 shell, which you can fill in and modify while working through the chapter.
 */
 
-trait Prop {
-  def check:Either[(FailedCase, SuccessCount), SuccessCount]
+
+case class Prop(run: (TestCases, RNG) => Result) {
+  def check:Result = ???
 }
 
 object Prop {
+  type TestCases = Int
   type SuccessCount = Int
   type FailedCase = String
+
+  sealed trait Result {
+    def isFalsified: Boolean
+  }
+
+  case object Passed extends Result {
+    override def isFalsified: Boolean = false
+  }
+
+  case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
+    override def isFalsified: Boolean = true
+  }
+
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 }
 
