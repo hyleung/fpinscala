@@ -16,7 +16,7 @@ shell, which you can fill in and modify while working through the chapter.
 
 
 case class Prop(run: (TestCases, RNG) => Result) {
-  def check:Result = ???
+
 }
 
 object Prop {
@@ -36,7 +36,18 @@ object Prop {
     override def isFalsified: Boolean = true
   }
 
-  def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
+  def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = Prop(
+    (n,rng) => randomStream(gen)(rng).zip(Stream.from(0)).take(n).map {
+      case (a, i) => try {
+        if (f(a)) Passed else Falsified(a.toString, i)
+      } catch {
+        case e: Exception => ???
+      }
+    }.find(_.isFalsified).getOrElse(Passed)
+  )
+
+  def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
+    Stream.unfold(rng)(r => Some(g.sample.run(r)))
 }
 
 object Gen {
