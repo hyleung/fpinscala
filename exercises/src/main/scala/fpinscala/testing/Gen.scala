@@ -41,13 +41,18 @@ object Prop {
       case (a, i) => try {
         if (f(a)) Passed else Falsified(a.toString, i)
       } catch {
-        case e: Exception => ???
+        case e: Exception => Falsified(buildMsg(a,e), i)
       }
     }.find(_.isFalsified).getOrElse(Passed)
   )
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(r => Some(g.sample.run(r)))
+
+  def buildMsg[A](s: A, e:Exception):String =
+    s"test case: $s\n" +
+    s"generated an exception: ${e.getMessage}\n" +
+    s"stack trace:\n ${e.getStackTrace().mkString("\n")}"
 }
 
 object Gen {
