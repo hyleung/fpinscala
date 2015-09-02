@@ -26,7 +26,7 @@ class PropSpec extends FlatSpec with Matchers {
 		result.isFalsified should be(true)
 	}
 	behavior of "Prop.&&"
-	it should "&& Props pass" in {
+	it should "evaluate to Passed" in {
 		val g = Gen.unit(50)
 		val p1 = Prop.forAll(g)(_ == 50)
 		val p2 = Prop.forAll(g)(_ * 2 == 100)
@@ -34,7 +34,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val result = p.run(10, Simple(1l))
 		result.isFalsified should be (false)
 	}
-	it should "&& Props fail" in {
+	it should "evaluate to Falsified" in {
 		val g = Gen.unit(50)
 		val p1 = Prop.forAll(g)(_ == 50)
 		val p2 = Prop.forAll(g)(_ != 50)
@@ -42,4 +42,30 @@ class PropSpec extends FlatSpec with Matchers {
 		val result = p.run(10, Simple(1l))
 		result.isFalsified should be (true)
 	}
+	behavior of "Prop.||"
+	it should "evaluate Passed with first param" in {
+		val g = Gen.unit(50)
+		val p1 = Prop.forAll(g)(_ == 50)
+		val p2 = Prop.forAll(g)(_ != 50)
+		val p = p1.||(p2)
+		val result = p.run(10, Simple(1l))
+		result.isFalsified should be (false)
+	}
+	it should "evaluate Passed with second param" in {
+		val g = Gen.unit(50)
+		val p1 = Prop.forAll(g)(_ != 50)
+		val p2 = Prop.forAll(g)(_ == 50)
+		val p = p1.||(p2)
+		val result = p.run(10, Simple(1l))
+		result.isFalsified should be (false)
+	}
+	it should "evaluate Falsified" in {
+		val g = Gen.unit(50)
+		val p1 = Prop.forAll(g)(_ != 50) //Falsified
+		val p2 = Prop.forAll(g)(_ * 2 != 100) //Falsified
+		val p = p1.||(p2)
+		val result = p.run(10, Simple(1l))
+		result.isFalsified should be (true)
+	}
+
 }

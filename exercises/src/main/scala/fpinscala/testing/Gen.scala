@@ -20,7 +20,12 @@ case class Prop(run: (TestCases, RNG) => Result) {
     val r1 = run(n,rng)
     if (r1.isFalsified) r1 else p.run(n,rng)
   })
-  def ||(p: Prop):Prop = ???
+  def ||(p: Prop):Prop =  Prop((n,rng) => {
+    run(n,rng) match {
+      case Passed => Passed
+      case Falsified(_,_) => p.run(n,rng)
+    }
+  })
 }
 
 object Prop {
