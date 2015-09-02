@@ -25,4 +25,21 @@ class PropSpec extends FlatSpec with Matchers {
 		val result: Result = p.run(1000, Simple(1l))
 		result.isFalsified should be(true)
 	}
+	behavior of "Prop.&&"
+	it should "&& Props pass" in {
+		val g = Gen.unit(50)
+		val p1 = Prop.forAll(g)(_ == 50)
+		val p2 = Prop.forAll(g)(_ * 2 == 100)
+		val p = p1.&&(p2)
+		val result = p.run(10, Simple(1l))
+		result.isFalsified should be (false)
+	}
+	it should "&& Props fail" in {
+		val g = Gen.unit(50)
+		val p1 = Prop.forAll(g)(_ == 50)
+		val p2 = Prop.forAll(g)(_ != 50)
+		val p = p1.&&(p2)
+		val result = p.run(10, Simple(1l))
+		result.isFalsified should be (true)
+	}
 }

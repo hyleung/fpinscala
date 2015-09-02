@@ -16,7 +16,11 @@ shell, which you can fill in and modify while working through the chapter.
 
 
 case class Prop(run: (TestCases, RNG) => Result) {
-
+  def &&(p: Prop):Prop = Prop((n,rng) => {
+    val r1 = run(n,rng)
+    if (r1.isFalsified) r1 else p.run(n,rng)
+  })
+  def ||(p: Prop):Prop = ???
 }
 
 object Prop {
