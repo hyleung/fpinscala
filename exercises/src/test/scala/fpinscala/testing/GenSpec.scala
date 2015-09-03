@@ -79,4 +79,11 @@ class GenSpec extends FlatSpec with Matchers{
 		val (v,_) = r.sample.run(Simple(1l))
 		v should (be (2) or be (1))
 	}
+	behavior of "Gen.unsized"
+	it should "convert a Gen to an SGen" in {
+		val g = Gen.unit(1)
+		val s = g.unsized
+		val (r,_) = s.forSize(1).sample.run(Simple(1l))
+		r should be (1)
+	}
 }

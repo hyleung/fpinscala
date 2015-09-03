@@ -79,11 +79,12 @@ object Gen {
         .flatMap( g => g._1)
 }
 
-case class Gen[A](sample: State[RNG,A]) {
+case class Gen[+A](sample: State[RNG,A]) {
   def flatMap[B](f: A => Gen[B]): Gen[B] =
     Gen(this.sample.flatMap(a => f(a).sample))
   def listOfN(n:Int):Gen[List[A]] =
     Gen(State.sequence(List.fill(n)(sample)))
+  def unsized = SGen( _ => this)
 }
 
 //trait Gen[A] {
@@ -91,7 +92,15 @@ case class Gen[A](sample: State[RNG,A]) {
 //  def flatMap[A,B](f: A => Gen[B]): Gen[B] = ???
 //}
 
-trait SGen[+A] {
+
+case class SGen[+A](forSize: Int => Gen[A]) {
 
 }
+
+
+//trait SGen[+A] {
+//
+//}
+
+
 
