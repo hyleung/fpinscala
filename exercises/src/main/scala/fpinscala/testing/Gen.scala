@@ -15,20 +15,21 @@ shell, which you can fill in and modify while working through the chapter.
 */
 
 
-case class Prop(run: (TestCases, RNG) => Result) {
-  def &&(p: Prop):Prop = Prop((n,rng) => {
-    val r1 = run(n,rng)
-    if (r1.isFalsified) r1 else p.run(n,rng)
+case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
+  def &&(p: Prop):Prop = Prop((max, n,rng) => {
+    val r1 = run(max, n,rng)
+    if (r1.isFalsified) r1 else p.run(max, n,rng)
   })
-  def ||(p: Prop):Prop =  Prop((n,rng) => {
-    run(n,rng) match {
+  def ||(p: Prop):Prop =  Prop((max, n,rng) => {
+    run(max, n,rng) match {
       case Passed => Passed
-      case Falsified(_,_) => p.run(n,rng)
+      case Falsified(_,_) => p.run(max, n,rng)
     }
   })
 }
 
 object Prop {
+  type MaxSize = Int
   type TestCases = Int
   type SuccessCount = Int
   type FailedCase = String
@@ -46,7 +47,7 @@ object Prop {
   }
 
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = Prop(
-    (n,rng) => randomStream(gen)(rng).zip(Stream.from(0)).take(n).map {
+    (max, n,rng) => randomStream(gen)(rng).zip(Stream.from(0)).take(n).map {
       case (a, i) => try {
         if (f(a)) Passed else Falsified(a.toString, i)
       } catch {
@@ -98,6 +99,9 @@ case class SGen[+A](forSize: Int => Gen[A]) {
 
 }
 
+object SGen {
+  def forAll[A](g: SGen[A])(f: A => Boolean):Prop = ???
+}
 
 //trait SGen[+A] {
 //

@@ -14,15 +14,15 @@ class PropSpec extends FlatSpec with Matchers {
 	behavior of "Prop.forAll"
 	it should "check property for all passing" in {
 		val p = Prop.forAll(Gen.unit(1))(_ == 1)
-		p.run(100, Simple(1l)) should be(Passed)
+		p.run(100, 100, Simple(1l)) should be(Passed)
 	}
 	it should "check property for one failing" in {
 		val p = Prop.forAll(Gen.choose(1, 100))(_ != 50)
-		p.run(1000, Simple(1l)).isFalsified should be(true)
+		p.run(100, 1000, Simple(1l)).isFalsified should be(true)
 	}
 	it should "fail if exception is thrown in predicate" in {
 		val p = Prop.forAll(Gen.unit(1))(i => throw new RuntimeException)
-		val result: Result = p.run(1000, Simple(1l))
+		val result: Result = p.run(100, 1000, Simple(1l))
 		result.isFalsified should be(true)
 	}
 	behavior of "Prop.&&"
@@ -31,7 +31,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val p1 = Prop.forAll(g)(_ == 50)
 		val p2 = Prop.forAll(g)(_ * 2 == 100)
 		val p = p1.&&(p2)
-		val result = p.run(10, Simple(1l))
+		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (false)
 	}
 	it should "evaluate to Falsified" in {
@@ -39,7 +39,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val p1 = Prop.forAll(g)(_ == 50)
 		val p2 = Prop.forAll(g)(_ != 50)
 		val p = p1.&&(p2)
-		val result = p.run(10, Simple(1l))
+		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (true)
 	}
 	behavior of "Prop.||"
@@ -48,7 +48,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val p1 = Prop.forAll(g)(_ == 50)
 		val p2 = Prop.forAll(g)(_ != 50)
 		val p = p1.||(p2)
-		val result = p.run(10, Simple(1l))
+		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (false)
 	}
 	it should "evaluate Passed with second param" in {
@@ -56,7 +56,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val p1 = Prop.forAll(g)(_ != 50)
 		val p2 = Prop.forAll(g)(_ == 50)
 		val p = p1.||(p2)
-		val result = p.run(10, Simple(1l))
+		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (false)
 	}
 	it should "evaluate Falsified" in {
@@ -64,7 +64,7 @@ class PropSpec extends FlatSpec with Matchers {
 		val p1 = Prop.forAll(g)(_ != 50) //Falsified
 		val p2 = Prop.forAll(g)(_ * 2 != 100) //Falsified
 		val p = p1.||(p2)
-		val result = p.run(10, Simple(1l))
+		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (true)
 	}
 
