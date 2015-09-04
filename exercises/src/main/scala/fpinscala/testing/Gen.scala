@@ -77,6 +77,7 @@ object Gen {
     Gen(State(RNG.double)
         .map{ d => if (d <= g1._2) g1 else g2})
         .flatMap( g => g._1)
+  def listOf[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n))
 }
 
 case class Gen[+A](sample: State[RNG,A]) {

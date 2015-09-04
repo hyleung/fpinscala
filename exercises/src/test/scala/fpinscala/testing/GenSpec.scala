@@ -86,4 +86,11 @@ class GenSpec extends FlatSpec with Matchers{
 		val (r,_) = s.forSize(1).sample.run(Simple(1l))
 		r should be (1)
 	}
+	behavior of "Gen.listOf"
+	it should "return an SGen of List of A" in {
+		val g = Gen.unit(1)
+		val s = Gen.listOf(g)
+		val (r,_) = s.forSize(3).sample.run(Simple(1l))
+		r should be (List(1,1,1))
+	}
 }
