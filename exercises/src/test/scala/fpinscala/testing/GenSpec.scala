@@ -93,4 +93,14 @@ class GenSpec extends FlatSpec with Matchers{
 		val (r,_) = s.forSize(3).sample.run(Simple(1l))
 		r should be (List(1,1,1))
 	}
+	behavior of "max"
+	"The maximum of a list" should "be greater than or equal to every other element" in {
+		val smallInt = Gen.choose(-10,10)
+		val maxProp = Prop.forAll(Gen.listOf(smallInt)) { ns =>
+			val max = ns.max
+			!ns.exists(_ > max) //there exists no element greater than the max
+		}
+		val result: Boolean = Prop.run(maxProp)
+		result should be (true)
+	}
 }

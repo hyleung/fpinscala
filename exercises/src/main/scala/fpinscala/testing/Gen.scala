@@ -78,6 +78,20 @@ object Prop {
 
   def apply(f: (TestCases,RNG) => Result): Prop =
     Prop { (_,n,rng) => f(n,rng) }
+
+  def run(p: Prop,
+             maxSize: Int = 100,
+             testCases: Int = 100,
+             rng: RNG = RNG.Simple(System.currentTimeMillis())) : Boolean = {
+    p.run(maxSize, testCases, rng) match {
+      case Falsified(failure, successCount) =>
+            println(s"! Falsified after $successCount passed")
+            false
+      case Passed =>
+            println(s"OK, passed $testCases tests")
+            true
+    }
+  }
 }
 
 object Gen {
@@ -94,6 +108,7 @@ object Gen {
         .map{ d => if (d <= g1._2) g1 else g2})
         .flatMap( g => g._1)
   def listOf[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n))
+  def listOf1[A](g: Gen[A]):SGen[List[A]] = ???
 }
 
 case class Gen[+A](sample: State[RNG,A]) {
