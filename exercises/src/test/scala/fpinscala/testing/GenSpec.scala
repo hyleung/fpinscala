@@ -100,7 +100,6 @@ class GenSpec extends FlatSpec with Matchers{
 			val max = ns.max
 			!ns.exists(_ > max) //there exists no element greater than the max
 		}
-		val result: Boolean = Prop.run(maxProp)
-		result should be (true)
+		Prop.run(maxProp)
 	}
 }

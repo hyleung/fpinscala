@@ -82,14 +82,12 @@ object Prop {
   def run(p: Prop,
              maxSize: Int = 100,
              testCases: Int = 100,
-             rng: RNG = RNG.Simple(System.currentTimeMillis())) : Boolean = {
+             rng: RNG = RNG.Simple(System.currentTimeMillis())) : Unit = {
     p.run(maxSize, testCases, rng) match {
       case Falsified(failure, successCount) =>
-            println(s"! Falsified after $successCount passed")
-            false
+            throw new AssertionError(s"! Falsified after $successCount passed")
       case Passed =>
-            println(s"OK, passed $testCases tests")
-            true
+            throw new AssertionError(s"OK, passed $testCases tests")
     }
   }
 }
