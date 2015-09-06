@@ -46,23 +46,27 @@ object Prop {
     override def isFalsified: Boolean = true
   }
 
-  def forAll[A](gen: SGen[A])(f: A => Boolean): Prop = forAll(gen)(f)
+  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+    (n,rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
+      case (a, i) => try {
+        if (f(a)) Passed else Falsified(a.toString, i)
+      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+    }.find(_.isFalsified).getOrElse(Passed)
+  }
 
+  def forAll[A](g: SGen[A])(f: A => Boolean): Prop = forAll(g(_))(f)
 
-  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop (
-    (max, n,rng) => {
-      val casesPerSize = (n + (max - 1)) / max
-      val props:Stream[Prop] = Stream
-          .from(0)
-          .take((n min max) +  1)
-          .map(i => forAll(g)(f))
-      val prop:Prop =
-        props.map(p => Prop({(max, _, rng) =>
+  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
+    (max,n,rng) =>
+      val casesPerSize = (n - 1) / max + 1
+      val props: Stream[Prop] =
+        Stream.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
+      val prop: Prop =
+        props.map(p => Prop { (max, n, rng) =>
           p.run(max, casesPerSize, rng)
-        })).toList.reduce(_ && _)
-      prop.run(max, n, rng)
-    }
-  )
+        }).toList.reduce(_ && _)
+      prop.run(max,n,rng)
+  }
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(r => Some(g.sample.run(r)))
@@ -71,6 +75,9 @@ object Prop {
     s"test case: $s\n" +
     s"generated an exception: ${e.getMessage}\n" +
     s"stack trace:\n ${e.getStackTrace().mkString("\n")}"
+
+  def apply(f: (TestCases,RNG) => Result): Prop =
+    Prop { (_,n,rng) => f(n,rng) }
 }
 
 object Gen {
@@ -104,11 +111,11 @@ case class Gen[+A](sample: State[RNG,A]) {
 
 
 case class SGen[+A](forSize: Int => Gen[A]) {
-
+  def apply(n: Int): Gen[A] = forSize(n)
 }
 
 object SGen {
-  def forAll[A](g: SGen[A])(f: A => Boolean):Prop = ???
+
 }
 
 //trait SGen[+A] {
