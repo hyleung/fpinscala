@@ -87,7 +87,7 @@ object Prop {
       case Falsified(failure, successCount) =>
             throw new AssertionError(s"! Falsified after $successCount passed")
       case Passed =>
-            throw new AssertionError(s"OK, passed $testCases tests")
+            println(s"OK, passed $testCases tests")
     }
   }
 }
@@ -106,7 +106,7 @@ object Gen {
         .map{ d => if (d <= g1._2) g1 else g2})
         .flatMap( g => g._1)
   def listOf[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n))
-  def listOf1[A](g: Gen[A]):SGen[List[A]] = ???
+  def listOf1[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n max 1)) // n or 1
 }
 
 case class Gen[+A](sample: State[RNG,A]) {

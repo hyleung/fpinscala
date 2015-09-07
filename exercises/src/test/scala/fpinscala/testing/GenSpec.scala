@@ -96,7 +96,7 @@ class GenSpec extends FlatSpec with Matchers{
 	behavior of "max"
 	"The maximum of a list" should "be greater than or equal to every other element" in {
 		val smallInt = Gen.choose(-10,10)
-		val maxProp = Prop.forAll(Gen.listOf(smallInt)) { ns =>
+		val maxProp = Prop.forAll(Gen.listOf1(smallInt)) { ns =>
 			val max = ns.max
 			!ns.exists(_ > max) //there exists no element greater than the max
 		}
