@@ -1,7 +1,7 @@
 package fpinscala.testing
 
 import fpinscala.state.RNG.Simple
-import fpinscala.testing.Prop.{Passed, Result}
+import fpinscala.testing.Prop.{Falsified, Passed, Result}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -19,6 +19,14 @@ class PropSpec extends FlatSpec with Matchers {
 	it should "check property for one failing" in {
 		val p = Prop.forAll(Gen.choose(1, 100).unsized)(_ != 50)
 		p.run(100, 1000, Simple(1l)).isFalsified should be(true)
+	}
+	it should "check failing property for with correct count" in {
+		val p = Prop.forAll(Gen.choose(1, 100).unsized)(_ <= 50)
+		p.run(100, 1000, Simple(1l)) match {
+			case Falsified(failedCase, count) => count should be > 0
+			case _ => fail()
+		}
+
 	}
 	it should "fail if exception is thrown in predicate" in {
 		val p = Prop.forAll(Gen.unit(1).unsized)(i => throw new RuntimeException)
