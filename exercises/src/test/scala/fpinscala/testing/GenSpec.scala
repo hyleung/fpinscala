@@ -1,5 +1,6 @@
 package fpinscala.testing
 
+import fpinscala.state.{State, RNG}
 import fpinscala.state.RNG.Simple
 import org.scalatest.{Matchers, FlatSpec}
 
@@ -101,5 +102,17 @@ class GenSpec extends FlatSpec with Matchers{
 			!ns.exists(_ > max) //there exists no element greater than the max
 		}
 		Prop.run(maxProp)
+	}
+	behavior of "List.sorted"
+	it should "return the sorted list" in {
+		val ints = Gen(State(RNG.nonNegativeInt))
+		val s = Gen.listOf(ints)
+		val sortedProp = Prop.forAll(s){l =>
+			val sorted = l.sorted
+			sorted.isEmpty ||
+			sorted.tail.isEmpty ||
+			!sorted.zip(sorted.tail).exists{ case (a,b) => a > b }
+		}
+		Prop.run(sortedProp)
 	}
 }
