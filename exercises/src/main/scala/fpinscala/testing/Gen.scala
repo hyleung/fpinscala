@@ -1,13 +1,9 @@
 package fpinscala.testing
 
 import fpinscala.laziness.Stream
-import fpinscala.state.RNG.Simple
 import fpinscala.state._
-import fpinscala.parallelism._
-import fpinscala.parallelism.Par.Par
-import Gen._
-import Prop._
-import java.util.concurrent.{Executors,ExecutorService}
+import fpinscala.testing.Gen._
+import fpinscala.testing.Prop._
 
 /*
 The library developed in this chapter goes through several iterations. This file is just the
@@ -16,14 +12,17 @@ shell, which you can fill in and modify while working through the chapter.
 
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
-  def &&(p: Prop):Prop = Prop((max, n,rng) => {
-    val r1 = run(max, n,rng)
-    if (r1.isFalsified) r1 else p.run(max, n,rng)
+  def &&(p: Prop) = Prop((max, n,rng) => {
+    run(max,n,rng) match {
+      case Proved | Passed => p.run(max,n, rng)
+      case x => x
+    }
   })
+
   def ||(p: Prop):Prop =  Prop((max, n,rng) => {
     run(max, n,rng) match {
-      case Passed => Passed
       case Falsified(_,_) => p.run(max, n,rng)
+      case p => p
     }
   })
 }
@@ -44,6 +43,10 @@ object Prop {
 
   case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
     override def isFalsified: Boolean = true
+  }
+
+  case object Proved extends Result {
+    override def isFalsified: Boolean = false
   }
 
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
@@ -88,7 +91,14 @@ object Prop {
             throw new AssertionError(s"! Falsified after $successCount passed")
       case Passed =>
             println(s"OK, passed $testCases tests")
+      case Proved =>
+            println(s"OK, proved property")
     }
+  }
+
+  def check (p: => Boolean): Prop = {
+    lazy val result = p
+    forAll(unit(()))(_ => result)
   }
 }
 
