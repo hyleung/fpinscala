@@ -3,6 +3,8 @@ package fpinscala.testing
 import java.util.concurrent.{Executors, ExecutorService}
 
 import fpinscala.parallelism.Par
+import fpinscala.parallelism.Par
+import fpinscala.parallelism.Par.Par
 import fpinscala.state.RNG.Simple
 import fpinscala.testing.Prop.{Proved, Falsified, Passed, Result}
 import org.scalatest.{FlatSpec, Matchers}
@@ -91,5 +93,16 @@ class PropSpec extends FlatSpec with Matchers {
 			p(ES).get() == p2(ES).get()
 		}
 		Prop.run(p2)
+	}
+	it should "enable testing of Par with lifted equals" in {
+		def equal[A](p:Par[A], p2:Par[A]):Par[Boolean] =
+			Par.map2(p,p2)(_ == _)
+		val ES = Executors.newCachedThreadPool()
+		val parEqual = equal(
+			Par.map(Par.unit(1))(_ + 1),
+			Par.unit(2)
+		)
+		val p3 = Prop.check(parEqual(ES).get())
+		Prop.run(p3)
 	}
 }
