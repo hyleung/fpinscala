@@ -96,10 +96,8 @@ object Prop {
     }
   }
 
-  def check (p: => Boolean): Prop = {
-    lazy val result = p
-    forAll(unit(()))(_ => result)
-  }
+  def check (p: => Boolean): Prop = Prop((_,_,_) =>
+      if (p) Passed else Falsified("()",0))
 }
 
 object Gen {

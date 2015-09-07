@@ -1,7 +1,7 @@
 package fpinscala.testing
 
 import fpinscala.state.RNG.Simple
-import fpinscala.testing.Prop.{Falsified, Passed, Result}
+import fpinscala.testing.Prop.{Proved, Falsified, Passed, Result}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
@@ -75,5 +75,9 @@ class PropSpec extends FlatSpec with Matchers {
 		val result = p.run(100, 10, Simple(1l))
 		result.isFalsified should be (true)
 	}
-
+	behavior of "check"
+	it should "evaluate to Proved for boolean" in {
+		val r = Prop.check(true).run(10,10, Simple(1l))
+		r should be (Passed)
+	}
 }
