@@ -1,5 +1,8 @@
 package fpinscala.testing
 
+import java.util.concurrent.{Executors, ExecutorService}
+
+import fpinscala.parallelism.Par
 import fpinscala.state.RNG.Simple
 import fpinscala.testing.Prop.{Proved, Falsified, Passed, Result}
 import org.scalatest.{FlatSpec, Matchers}
@@ -79,5 +82,14 @@ class PropSpec extends FlatSpec with Matchers {
 	it should "evaluate to Proved for boolean" in {
 		val r = Prop.check(true).run(10,10, Simple(1l))
 		r should be (Passed)
+	}
+	it should "enable testing of Par" in {
+		val ES = Executors.newCachedThreadPool()
+		val p2 = Prop.check{
+			val p = Par.map(Par.unit(1))(_ + 1)
+			val p2 = Par.unit(2)
+			p(ES).get() == p2(ES).get()
+		}
+		Prop.run(p2)
 	}
 }
