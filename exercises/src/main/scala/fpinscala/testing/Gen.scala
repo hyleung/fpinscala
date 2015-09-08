@@ -1,6 +1,9 @@
 package fpinscala.testing
 
+import java.util.concurrent.Executors
+
 import fpinscala.laziness.Stream
+import fpinscala.parallelism.Par.Par
 import fpinscala.state._
 import fpinscala.testing.Gen._
 import fpinscala.testing.Prop._
@@ -70,6 +73,8 @@ object Prop {
         }).toList.reduce(_ && _)
       prop.run(max,n,rng)
   }
+  def forAllPar[A](g:Gen[A])(f: A => Par[Boolean]): Prop =
+    forAll(S.map2(g)((_,_))) { case (s,a) => f(a)(s).get}
 
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(r => Some(g.sample.run(r)))
@@ -115,14 +120,24 @@ object Gen {
         .flatMap( g => g._1)
   def listOf[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n))
   def listOf1[A](g: Gen[A]):SGen[List[A]] = SGen((n) => g.listOfN(n max 1)) // n or 1
+  val S = weighted(
+            choose(1,4).map(Executors.newFixedThreadPool) -> .75, // 75% of the time, fixed thread pool with between 1 and 4 threads
+            unit(Executors.newCachedThreadPool) -> 0.25) //unbounded 25% of the time
+
+
 }
 
 case class Gen[+A](sample: State[RNG,A]) {
+  def map[B](f: A => B): Gen[B] =
+    Gen(sample.map(f))
   def flatMap[B](f: A => Gen[B]): Gen[B] =
     Gen(this.sample.flatMap(a => f(a).sample))
+  def map2[B,C](g: Gen[B])(f: (A,B) => C): Gen[C] =
+    Gen(sample.map2(g.sample)(f))
   def listOfN(n:Int):Gen[List[A]] =
     Gen(State.sequence(List.fill(n)(sample)))
   def unsized = SGen( _ => this)
+
 }
 
 //trait Gen[A] {
