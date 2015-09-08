@@ -148,5 +148,18 @@ class PropSpec extends FlatSpec with Matchers {
 		})
 		Prop.run(p)
 	}
+	"appending the result of takeWhile and dropWhile" should "yield original list" in {
+		val g = Gen.listOf1(Gen(State(r => RNG.nonNegativeInt(r))))
+		val p = Prop.forAll(g)(l => {
+			val s = l.sorted
+			Gen.choose(0,s.size).map(i => {
+				val f = (x:Int) => x < i
+				val l1 = s.takeWhile(f)
+				val l2 = s.dropWhile(f)
+				s == l1 ++ l2
+			}).sample.run(Simple(System.currentTimeMillis()))._1
+		})
+		Prop.run(p)
+	}
 
 }
