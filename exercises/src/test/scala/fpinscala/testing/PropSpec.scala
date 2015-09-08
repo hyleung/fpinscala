@@ -6,6 +6,7 @@ import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par
 import fpinscala.parallelism.Par.Par
 import fpinscala.state.RNG.Simple
+import fpinscala.state.{RNG, State}
 import fpinscala.testing.Prop.{Proved, Falsified, Passed, Result}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -135,4 +136,17 @@ class PropSpec extends FlatSpec with Matchers {
 		val pint = Gen.choose(0,10).map(Par.unit(_))
 		val p = Prop.forAllPar(pint)(n => equal(Par.fork(n), n))
 	}
+	behavior of "List.takeWhile"
+	"every element returned" should "satisfy predicate" in {
+		val g = Gen.listOf1(Gen(State(r => RNG.nonNegativeInt(r))))
+		val p = Prop.forAll(g)(l => {
+			val s = l.sorted
+			Gen.choose(0,s.size).map(i => {
+				val f = (x:Int) => x < i
+				s.takeWhile(f).forall(f)
+			}).sample.run(Simple(System.currentTimeMillis()))._1
+		})
+		Prop.run(p)
+	}
+
 }
