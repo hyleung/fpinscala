@@ -112,4 +112,21 @@ class PropSpec extends FlatSpec with Matchers {
 		val p = Prop.forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
 		Prop.run(p)
 	}
+	it should "verify map(y)(x => x) == y with more complex generator" in {
+		def equal[A](p:Par[A], p2:Par[A]):Par[Boolean] =
+			Par.map2(p,p2)(_ == _)
+		/**
+		 *  ¯\_(ツ)_/¯
+		 */
+		val pint = Gen
+			.choose(1,100)
+			.map2(Gen.choose(100,1000))((a,b) =>
+			{
+				val p1 = Par.fork(Par.unit(a))
+				val p2 = Par.fork(Par.unit(b))
+				Par.map2(p1, p2)(_ + _)
+			} )
+		val p = Prop.forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
+		Prop.run(p)
+	}
 }
