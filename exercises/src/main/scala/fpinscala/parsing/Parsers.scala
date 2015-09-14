@@ -5,11 +5,13 @@ import scala.util.matching.Regex
 import fpinscala.testing._
 import fpinscala.testing.Prop._
 
-trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trait
+trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call methods of trait
+  def char(c:Char):Parser[Char] = ???
+  def string(s:String):Parser[String] = ???
+  def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
+  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
 
   case class ParserOps[A](p: Parser[A]) {
-
-
   }
 
   object Laws {
