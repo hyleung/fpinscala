@@ -7,11 +7,14 @@ import fpinscala.testing.Prop._
 
 trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call methods of trait
   def char(c:Char):Parser[Char] = ???
-  def string(s:String):Parser[String] = ???
+  implicit def string(s:String):Parser[String] = ???
+  implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
-  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
 
+  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
   case class ParserOps[A](p: Parser[A]) {
+    def | [B>:A](p2:Parser[B]) = self.or(p,p2)
+    def or [B>:A](p2:Parser[B]) = self.or(p,p2)
   }
 
   object Laws {
