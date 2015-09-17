@@ -18,6 +18,9 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   def slice[A](p:Parser[A]):Parser[String] = ???
   def many1[A](p:Parser[A]):Parser[List[A]] = ???
   def product[A,B](p1:Parser[A], p2:Parser[B]):Parser[(A,B)]
+
+  def map2[A,B,C](p1:Parser[A],p2:Parser[B])(f: (A,B) => C):Parser[C] = product(p1,p2).map{ case (a,b) => f(a,b) }
+
   val numA:Parser[Int] = char('a').many.map(_.size)
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
