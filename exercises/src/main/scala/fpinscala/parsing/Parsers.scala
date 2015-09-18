@@ -12,7 +12,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
   def listofN[A](n: Int, p:Parser[A]):Parser[List[A]] = ???
-  def many[A](p:Parser[A]):Parser[List[A]] = ???
+  def many[A](p:Parser[A]):Parser[List[A]] = map2(p, many(p))(_ :: _) | 
   def succeed[A](a:A):Parser[A] = string("").map(_ => a)
   def map[A,B](a:Parser[A])(f: A => B):Parser[B] = ???
   def slice[A](p:Parser[A]):Parser[String] = ???
@@ -44,7 +44,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
     def productAssociativityLaw[A,B,C](p1:Parser[A],p2:Parser[B],p3:Parser[C])(in:Gen[String]):Prop =
       equal(product(p1,p2),product(p2,p3))(in)
 
-    // f(a * b) == f(a) * f(b)? 
+    // f(a * b) == f(a) * f(b)?
     def productMapLaw[A,B](p1:Parser[A],p2:Parser[A])(in:Gen[String])(f:A => B):Prop =
       equal(product(p1,p2).map(f),product(p1.map(f),p2.map(f)))(in)
   }
