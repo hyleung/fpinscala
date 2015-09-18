@@ -39,9 +39,14 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
       equal(p, p.map(a => a))(in)
     def succeedLaw[A](in:Gen[String]):Prop =
       forAll(in)(s => run(succeed("a"))(s) == Right("a"))
+
+    // (a * b) * c == a * (b * c)
     def productAssociativityLaw[A,B,C](p1:Parser[A],p2:Parser[B],p3:Parser[C])(in:Gen[String]):Prop =
       equal(product(p1,p2),product(p2,p3))(in)
 
+    // f(a * b) == f(a) * f(b)? 
+    def productMapLaw[A,B](p1:Parser[A],p2:Parser[A])(in:Gen[String])(f:A => B):Prop =
+      equal(product(p1,p2).map(f),product(p1.map(f),p2.map(f)))(in)
   }
 }
 
