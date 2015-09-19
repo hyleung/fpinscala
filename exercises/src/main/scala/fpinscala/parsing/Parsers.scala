@@ -6,24 +6,25 @@ import fpinscala.testing._
 import fpinscala.testing.Prop._
 
 trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call methods of trait
-  def char(c:Char):Parser[Char] = string(c.toString).map(_.charAt(0))
+  //primitives
   implicit def string(s:String):Parser[String]
-  implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
-  implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
   implicit def regex(r:Regex):Parser[String]
+  def slice[A](p:Parser[A]):Parser[String] = ???
+  def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B] = ???
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
+  def succeed[A](a:A):Parser[A] = string("").map(_ => a)
+
+  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
+
+  //combinators
+  def char(c:Char):Parser[Char] = string(c.toString).map(_.charAt(0))
 
   def listOfN[A](n: Int, p:Parser[A]):Parser[List[A]] = map2(p,listOfN(n -1, p))(_ :: _) | succeed(List())
 
   def many[A](p:Parser[A]):Parser[List[A]] = map2(p, many(p))(_ :: _) | succeed(List())
 
-  def succeed[A](a:A):Parser[A] = string("").map(_ => a)
-
   def map[A,B](pa:Parser[A])(f: A => B):Parser[B] = pa.flatMap(a => succeed(f(a)))
 
-  def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B] = ???
-
-  def slice[A](p:Parser[A]):Parser[String] = ???
   def many1[A](p:Parser[A]):Parser[List[A]] = ???
 
   def product[A,B](p1:Parser[A], p2:Parser[B]):Parser[(A,B)] = for {
@@ -39,7 +40,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
   val numA:Parser[Int] = char('a').many.map(_.size)
 
-  def nChars(c:Char):Parser[Int] = regex("[0-9]+".r).flatMap{ s =>
+  def nChars(c:Char):Parser[Int] = "[0-9]+".r.flatMap{ s =>
       try {
         val n = s.toInt
         listOfN(n,char(c)).map{l => l.size}
@@ -50,12 +51,14 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   }
 
   def nChars2(c:Char):Parser[Int] = for {
-    d <- regex("[0-9]+".r)
+    d <- "[0-9]+".r
     n = d.toInt //<-- didn't know you could do this!
     l <- listOfN(n,char(c))
   } yield l.size
 
-  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
+  implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
+  implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
+
   case class ParserOps[A](p: Parser[A]) {
     def | [B>:A](p2:Parser[B]) = self.or(p,p2)
     def or [B>:A](p2:Parser[B]) = self.or(p,p2)
