@@ -19,7 +19,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
   def succeed[A](a:A):Parser[A] = string("").map(_ => a)
 
-  def map[A,B](a:Parser[A])(f: A => B):Parser[B] = ???
+  def map[A,B](pa:Parser[A])(f: A => B):Parser[B] = pa.flatMap(a => succeed(f(a)))
 
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B] = ???
 
