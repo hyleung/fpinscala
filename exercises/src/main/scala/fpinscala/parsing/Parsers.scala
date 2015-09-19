@@ -25,7 +25,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
   def map[A,B](pa:Parser[A])(f: A => B):Parser[B] = pa.flatMap(a => succeed(f(a)))
 
-  def many1[A](p:Parser[A]):Parser[List[A]] = ???
+  def many1[A](p:Parser[A]):Parser[List[A]] = map2(p, many(p))(_ :: _)
 
   def product[A,B](p1:Parser[A], p2:Parser[B]):Parser[(A,B)] = for {
     a <- p1
