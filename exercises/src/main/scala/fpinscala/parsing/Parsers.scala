@@ -19,7 +19,6 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
   def succeed[A](a:A):Parser[A] = string("").map(_ => a)
 
-
   def map[A,B](a:Parser[A])(f: A => B):Parser[B] = ???
 
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B] = ???
@@ -41,6 +40,12 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
       }
 
   }
+
+  def nChars2:Parser[Int] = for {
+    d <- regex("[0-9]+".r)
+    n = d.toInt //<-- didn't know you could do this!
+    l <- listofN(n,char('a'))
+  } yield l.size
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
   case class ParserOps[A](p: Parser[A]) {
