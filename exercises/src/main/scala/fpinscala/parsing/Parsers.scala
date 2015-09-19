@@ -25,26 +25,30 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
   def slice[A](p:Parser[A]):Parser[String] = ???
   def many1[A](p:Parser[A]):Parser[List[A]] = ???
-  def product[A,B](p1:Parser[A], p2:Parser[B]):Parser[(A,B)]
+
+  def product[A,B](p1:Parser[A], p2:Parser[B]):Parser[(A,B)] = for {
+    a <- p1
+    b <- p2
+  } yield (a,b)
 
   def map2[A,B,C](p1:Parser[A],p2: => Parser[B])(f: (A,B) => C):Parser[C] = product(p1,p2).map{ case (a,b) => f(a,b) }
 
   val numA:Parser[Int] = char('a').many.map(_.size)
 
-  def nChars:Parser[Int] = regex("[0-9]+".r).flatMap{ s =>
+  def nChars(c:Char):Parser[Int] = regex("[0-9]+".r).flatMap{ s =>
       try {
         val n = s.toInt
-        listofN(n,char('a')).map{l => l.size}
+        listofN(n,char(c)).map{l => l.size}
       } catch {
         case e:NumberFormatException => ???
       }
 
   }
 
-  def nChars2:Parser[Int] = for {
+  def nChars2(c:Char):Parser[Int] = for {
     d <- regex("[0-9]+".r)
     n = d.toInt //<-- didn't know you could do this!
-    l <- listofN(n,char('a'))
+    l <- listofN(n,char(c))
   } yield l.size
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
