@@ -13,7 +13,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   implicit def regex(r:Regex):Parser[String]
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
 
-  def listofN[A](n: Int, p:Parser[A]):Parser[List[A]] = map2(p,listofN(n -1, p))(_ :: _) | succeed(List())
+  def listOfN[A](n: Int, p:Parser[A]):Parser[List[A]] = map2(p,listOfN(n -1, p))(_ :: _) | succeed(List())
 
   def many[A](p:Parser[A]):Parser[List[A]] = map2(p, many(p))(_ :: _) | succeed(List())
 
@@ -42,7 +42,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   def nChars(c:Char):Parser[Int] = regex("[0-9]+".r).flatMap{ s =>
       try {
         val n = s.toInt
-        listofN(n,char(c)).map{l => l.size}
+        listOfN(n,char(c)).map{l => l.size}
       } catch {
         case e:NumberFormatException => ???
       }
@@ -52,7 +52,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
   def nChars2(c:Char):Parser[Int] = for {
     d <- regex("[0-9]+".r)
     n = d.toInt //<-- didn't know you could do this!
-    l <- listofN(n,char(c))
+    l <- listOfN(n,char(c))
   } yield l.size
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
