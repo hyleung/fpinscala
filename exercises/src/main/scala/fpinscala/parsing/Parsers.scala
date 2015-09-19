@@ -31,7 +31,11 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
     b <- p2
   } yield (a,b)
 
-  def map2[A,B,C](p1:Parser[A],p2: => Parser[B])(f: (A,B) => C):Parser[C] = product(p1,p2).map{ case (a,b) => f(a,b) }
+  def map2[A,B,C](p1:Parser[A],p2: => Parser[B])(f: (A,B) => C):Parser[C] = for {
+    a <- p1
+    b <- p2
+    c <- f(a,b)
+  } yield c
 
   val numA:Parser[Int] = char('a').many.map(_.size)
 
