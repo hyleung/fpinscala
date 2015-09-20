@@ -5,16 +5,16 @@ import scala.util.matching.Regex
 import fpinscala.testing._
 import fpinscala.testing.Prop._
 
-trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call methods of trait
+trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trait
   //primitives
   implicit def string(s:String):Parser[String]
   implicit def regex(r:Regex):Parser[String]
   def slice[A](p:Parser[A]):Parser[String] = ???
-  def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B] = ???
-  def or[A](s1: Parser[A], s2: Parser[A]):Parser[A] = ???
+  def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B]
+  def or[A](s1: Parser[A], s2: Parser[A]):Parser[A]
   def succeed[A](a:A):Parser[A] = string("").map(_ => a)
 
-  def run[A](p: Parser[A])(input: String):Either[ParseError,A] = ???
+  def run[A](p: Parser[A])(input: String):Either[ParseError,A]
 
   //combinators
   def char(c:Char):Parser[Char] = string(c.toString).map(_.charAt(0))
@@ -63,7 +63,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
     def | [B>:A](p2:Parser[B]) = self.or(p,p2)
     def or [B>:A](p2:Parser[B]) = self.or(p,p2)
     def many [B>:A]:Parser[List[B]] = self.many(p)
-    def map [B>:A,C](f: B => C):Parser[C] = self.map(p)(f)
+    def map [B](f: A => B):Parser[B] = self.map(p)(f)
     def ** [B>:A](p2:Parser[B]):Parser[(A,B)] = self.product(p,p2)
     def flatMap [B](f: A => Parser[B]):Parser[B] = self.flatMap(p)(f)
   }
@@ -82,7 +82,7 @@ trait Parsers[ParseError, Parser[+_]] { self => // so inner classes may call met
 
     // f(a * b) == f(a) * f(b)?
     def productMapLaw[A,B](p1:Parser[A],p2:Parser[A])(in:Gen[String])(f:A => B):Prop =
-      equal(product(p1,p2).map(f),product(p1.map(f),p2.map(f)))(in)
+      equal(product(p1,p2).map{case (a,b) => (f(a),f(b))},product(p1.map(f),p2.map(f)))(in)
   }
 }
 
