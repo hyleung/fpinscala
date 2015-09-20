@@ -12,7 +12,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def slice[A](p:Parser[A]):Parser[String] = ???
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B]
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A]
-  def succeed[A](a:A):Parser[A] = string("").map(_ => a)
+  def succeed[A](a:A):Parser[A]
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A]
 
