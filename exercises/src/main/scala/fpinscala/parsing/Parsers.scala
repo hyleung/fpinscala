@@ -35,8 +35,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def map2[A,B,C](p1:Parser[A],p2: => Parser[B])(f: (A,B) => C):Parser[C] = for {
     a <- p1
     b <- p2
-    c <- f(a,b)
-  } yield c
+  } yield  f(a,b)
 
   val numA:Parser[Int] = char('a').many.map(_.size)
 

@@ -1,5 +1,7 @@
 package fpinscala.parsing
 
+import fpinscala.parsing.ReferenceTypes.{Failure, ParseState, Success}
+
 import scala.util.matching.Regex
 
 /**
@@ -26,15 +28,52 @@ import fpinscala.parsing.ReferenceTypes.Parser
 
 object Reference extends Parsers[Parser] {
 	// so inner classes may call methods of trait
-	override implicit def string(s: String): Parser[String] = ???
+	override implicit def string(a: String): Parser[String] = s => {
+		val idx = findMismatchIndex(s.loc.input, a, s.loc.offset)
+		if (idx == -1) {
+			Success(a, a.length)
+		} else {
+			val newLocation = Location(s.loc.input, s.loc.offset + idx)
+			Failure(ParseError(List((newLocation,a))), isCommitted = true)
+		}
 
-	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = ???
+	}
 
-	override def or[A](s1: Parser[A], s2: Parser[A]): Parser[A] = ???
+	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = s => {
+		???
+	}
 
-	override def succeed[A](a: A): Parser[A] = ???
+	override def or[A](s1: Parser[A], s2: Parser[A]): Parser[A] = s => {
+		???
+	}
 
-	override def run[A](p: Parser[A])(input: String): Either[ParseError, A] = ???
+	override def succeed[A](a: A): Parser[A] = s => Success(a,0)
 
-	override implicit def regex(r: Regex): Parser[String] = ???
+	override def run[A](p: Parser[A])(input: String): Either[ParseError, A] =  {
+		val state = ParseState(Location(input))
+		p(state) match  {
+			case Success(a,l) => Right(a)
+			case Failure(error, committed) => Left(error)
+		}
+	}
+
+	override implicit def regex(r: Regex): Parser[String] = s => {
+		???
+	}
+
+	/** Returns -1 if s1.startsWith(s2), otherwise returns the
+	  * first index where the two strings differed. If s2 is
+	  * longer than s1, returns s1.length. */
+	def findMismatchIndex(input:String, search:String, offset:Int): Int = {
+		if (search.length > input.length) {
+			input.length
+		} else {
+			var i = 0
+			while( i < input.length && i < search.length) {
+				if(input.charAt(i) != search.charAt(i)) return i
+				i +=1
+			}
+			-1
+		}
+	}
 }
