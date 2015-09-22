@@ -51,7 +51,17 @@ object Reference extends Parsers[Parser] {
 	}
 
 	override def or[A](s1: Parser[A], s2: Parser[A]): Parser[A] = s => {
-		???
+		s1(s) match {
+			case Success(a,l) => Success(a,l)
+			case Failure(e1,e1Committed) => s2(s) match {
+				case Success(a,l) => Success(a,l)
+				case Failure(e2, e2Committed) => {
+						val location = Location(s.loc.input,0)
+						val errors = e1.stack ++ e2.stack
+						Failure(ParseError(errors), isCommitted = true)
+					}
+			}
+		}
 	}
 
 	override def succeed[A](a: A): Parser[A] = s => Success(a,0)

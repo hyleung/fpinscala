@@ -51,4 +51,25 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("abcde")
 		result should be (Left(ParseError(List((Location("abcde",0),"[\\d]+")))))
 	}
+
+	behavior of "or"
+	it should "return success on first parser" in {
+		val p1 = string("hello")
+		val p2 = string("hey,")
+		val result = r(p1 or p2)("hello parser")
+		result should be (Right("hello"))
+	}
+	it should "return success on second parser" in {
+		val p1 = string("hello")
+		val p2 = string("hey,")
+		val result = r(p1 or p2)("hey, parser")
+		result should be (Right("hey,"))
+	}
+	it should "return failure on first parser" in {
+		val p1 = string("hello")
+		val p2 = string("hey,")
+		val result = r(p1 or p2)("blah parser")
+		result should be (Left(ParseError(List((Location("blah parser",0),"hello"),(Location("blah parser",0),"hey,")))))
+	}
+
 }
