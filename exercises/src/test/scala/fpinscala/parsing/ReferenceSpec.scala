@@ -35,4 +35,20 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		result should be (Left(ParseError(
 			List((Location("abra",4),"abracadabra")))))
 	}
+	behavior of "regex"
+	it should "return success" in {
+		val p = Reference.regex("[\\d]+".r)
+		val result = r(p)("12345")
+		result should be (Right("12345"))
+	}
+	it should "return success substring" in {
+		val p = Reference.regex("[\\d]+".r)
+		val result = r(p)("12345abc")
+		result should be (Right("12345"))
+	}
+	it should "return failure" in {
+		val p = Reference.regex("[\\d]+".r)
+		val result = r(p)("abcde")
+		result should be (Left(ParseError(List((Location("abcde",0),"[\\d]+")))))
+	}
 }

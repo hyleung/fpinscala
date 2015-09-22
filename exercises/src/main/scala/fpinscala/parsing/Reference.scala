@@ -39,6 +39,13 @@ object Reference extends Parsers[Parser] {
 
 	}
 
+	override implicit def regex(r: Regex): Parser[String] = s => {
+		r.findPrefixMatchOf(s.loc.input) match {
+			case Some(m) => Success(m.matched,m.end - m.start)
+			case None => Failure(ParseError(List((Location(s.loc.input,0),r.toString()))), isCommitted = true)
+		}
+	}
+
 	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = s => {
 		???
 	}
@@ -55,10 +62,6 @@ object Reference extends Parsers[Parser] {
 			case Success(a,l) => Right(a)
 			case Failure(error, committed) => Left(error)
 		}
-	}
-
-	override implicit def regex(r: Regex): Parser[String] = s => {
-		???
 	}
 
 	/** Returns -1 if s1.startsWith(s2), otherwise returns the
