@@ -47,7 +47,13 @@ object Reference extends Parsers[Parser] {
 	}
 
 	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = s => {
-		???
+		p(s) match {
+			case Success(a,l) => {
+				val location = Location(s.loc.input, s.loc.offset + l)
+				f(a)(ParseState(location))
+			}
+			case fail:Failure => fail
+		}
 	}
 
 	override def or[A](s1: Parser[A], s2: Parser[A]): Parser[A] = s => {
@@ -77,16 +83,13 @@ object Reference extends Parsers[Parser] {
 	/** Returns -1 if s1.startsWith(s2), otherwise returns the
 	  * first index where the two strings differed. If s2 is
 	  * longer than s1, returns s1.length. */
-	def findMismatchIndex(input:String, search:String, offset:Int): Int = {
-		if (search.length > input.length) {
-			input.length
-		} else {
-			var i = 0
-			while( i < input.length && i < search.length) {
-				if(input.charAt(i) != search.charAt(i)) return i
-				i +=1
-			}
-			-1
+	def findMismatchIndex(s1:String, s2:String, offset:Int): Int = {
+		var i = 0
+		while (i < s1.length && i < s2.length) {
+			if (s1.charAt(i+offset) != s2.charAt(i)) return i
+			i += 1
 		}
+		if (s1.length-offset >= s2.length) -1
+		else s1.length-offset
 	}
 }

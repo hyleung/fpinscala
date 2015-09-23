@@ -72,4 +72,15 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		result should be (Left(ParseError(List((Location("blah parser",0),"hello"),(Location("blah parser",0),"hey,")))))
 	}
 
+	behavior of "flatMap"
+	it should "chain multiple parsers" in {
+		val p = string("hello").flatMap(s => succeed(s))
+		val result = r(p)("hello world")
+		result should be (Right("hello"))
+	}
+	it should "return failure" in {
+		val p = string("hello").flatMap(s => succeed(s))
+		val result = r(p)("HELLO world")
+		result should be (Left(ParseError(List((Location("HELLO world",0),"hello")))))
+	}
 }
