@@ -39,21 +39,11 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   val numA:Parser[Int] = char('a').many.map(_.size)
 
-  def nChars(c:Char):Parser[Int] = "[0-9]+".r.flatMap{ s =>
-      try {
-        val n = s.toInt
-        listOfN(n,char(c)).map{l => l.size}
-      } catch {
-        case e:NumberFormatException => ???
-      }
-
-  }
-
-  def nChars2(c:Char):Parser[Int] = for {
+  def nChars(c:Char):Parser[Int] = for {
     d <- "[0-9]+".r
     n = d.toInt //<-- didn't know you could do this!
-    l <- listOfN(n,char(c))
-  } yield l.size
+    _ <- listOfN(n,char(c))
+  } yield n
 
   implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
   implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))

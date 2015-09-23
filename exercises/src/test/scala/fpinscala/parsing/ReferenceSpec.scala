@@ -83,4 +83,10 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("HELLO world")
 		result should be (Left(ParseError(List((Location("HELLO world",0),"hello")))))
 	}
+	behavior of "nChars"
+	it should "return the number of matched chars" in {
+		val p = nChars('a')
+		val result = r(p)("3aaabbb")
+		result should be (Right(3))
+	}
 }
