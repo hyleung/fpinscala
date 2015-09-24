@@ -45,6 +45,9 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     _ <- listOfN(n,char(c))
   } yield n
 
+  def double:Parser[Double] =  "[0-9]+[.]{1}[0-9]+".r.map(s => s.toDouble)
+
+
   implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
   implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
 

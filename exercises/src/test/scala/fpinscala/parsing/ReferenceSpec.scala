@@ -89,4 +89,13 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("3aaabbb")
 		result should be (Right(3))
 	}
+	behavior of "double"
+	it should "return a double on successful parsing" in {
+		val result = r(double)("3.14")
+		result should be (Right(3.14))
+	}
+	it should "return failure if not a number" in {
+		val result = r(double)("hello")
+		result should be (Left(ParseError(List((Location("hello",0),"[0-9]+[.]{1}[0-9]+")))))
+	}
 }
