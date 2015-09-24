@@ -48,10 +48,9 @@ object Reference extends Parsers[Parser] {
 
 	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = s => {
 		p(s) match {
-			case Success(a,l) => {
-				val location = Location(s.loc.input, s.loc.offset + l)
-				f(a)(ParseState(location))
-			}
+			case Success(a,l) =>
+				val nextState = ParseState(Location(s.loc.input,s.loc.offset + l))
+				f(a)(nextState)
 			case fail:Failure => fail
 		}
 	}

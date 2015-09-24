@@ -41,11 +41,6 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("12345")
 		result should be (Right("12345"))
 	}
-	it should "return success substring" in {
-		val p = Reference.regex("[\\d]+".r)
-		val result = r(p)("12345abc")
-		result should be (Right("12345"))
-	}
 	it should "return failure" in {
 		val p = Reference.regex("[\\d]+".r)
 		val result = r(p)("abcde")
@@ -74,9 +69,9 @@ class ReferenceSpec extends FlatSpec with Matchers{
 
 	behavior of "flatMap"
 	it should "chain multiple parsers" in {
-		val p = string("hello").flatMap(s => succeed(s))
-		val result = r(p)("hello world")
-		result should be (Right("hello"))
+		val p = string("hello").flatMap(s => map2(succeed(s),string("world"))((a,b) => b + a))
+		val result = r(p)("helloworld")
+		result should be (Right("worldhello"))
 	}
 	it should "return failure" in {
 		val p = string("hello").flatMap(s => succeed(s))
@@ -86,7 +81,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	behavior of "nChars"
 	it should "return the number of matched chars" in {
 		val p = nChars('a')
-		val result = r(p)("3aaabbb")
+		val result = r(p)("3aaa")
 		result should be (Right(3))
 	}
 	behavior of "double"
