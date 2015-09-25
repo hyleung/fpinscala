@@ -49,6 +49,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def integer:Parser[Int] = "[0-9]+".r.map(s => s.toInt)
 
+  def parseBoolean:Parser[Boolean] = (string("true") | string("false")).map(s => s.toBoolean)
+
   implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
   implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
 

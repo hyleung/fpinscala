@@ -103,4 +103,18 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(integer)("hello")
 		result should be (Left(ParseError(List((Location("hello",0),"[0-9]+")))))
 	}
+
+	behavior of "parseBoolean"
+	it should "return true" in {
+		val result = r(parseBoolean)("true")
+		result should be (Right(true))
+	}
+	it should "return false" in {
+		val result = r(parseBoolean)("false")
+		result should be (Right(false))
+	}
+	it should "return failure" in {
+		val result = r(parseBoolean)("blargh")
+		result should be (Left(ParseError(List((Location("blargh",0),"true"),(Location("blargh",0),"false")))))
+	}
 }
