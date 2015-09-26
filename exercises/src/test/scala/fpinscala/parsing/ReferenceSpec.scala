@@ -117,4 +117,26 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(parseBoolean)("blargh")
 		result should be (Left(ParseError(List((Location("blargh",0),"true"),(Location("blargh",0),"false")))))
 	}
+
+	behavior of "whitespace"
+	it should "parse spaces" in {
+		val result = r(whitespace)("     ")
+		result should be (Right(""))
+	}
+	it should "parse line breaks" in {
+		val result = r(whitespace)("\n")
+		result should be (Right(""))
+	}
+	it should "parse tabs" in {
+		val result = r(whitespace)("\t")
+		result should be (Right(""))
+	}
+	it should "parse mix" in {
+		val result = r(whitespace)("\t   \n\t\t   ")
+		result should be (Right(""))
+	}
+	it should "return failure" in {
+		val result = r(whitespace)("abc")
+		result should be (Left(ParseError(List((Location("abc",0),"[\\s\\t\\n]+")))))
+	}
 }
