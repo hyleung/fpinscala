@@ -139,4 +139,22 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(whitespace)("abc")
 		result should be (Left(ParseError(List((Location("abc",0),"[\\s\\t\\n]+")))))
 	}
+
+	behavior of "quotedString"
+	it should "parse quoted string with double quotes" in {
+		val result = r(quotedString)("\"hello world\"")
+		result should be (Right("hello world"))
+	}
+	it should "parse quoted string with single quotes" in {
+		val result = r(quotedString)("'hello world'")
+		result should be (Right("hello world"))
+	}
+	it should "return failure" in {
+		val result = r(quotedString)("hello world")
+		result match {
+			case r@Right(_) => fail(s"Expecting Left result but got $r")
+			case Left(_) => //pass
+		}
+	}
+
 }
