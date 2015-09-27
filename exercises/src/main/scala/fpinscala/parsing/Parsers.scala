@@ -15,6 +15,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B]
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A]
   def succeed[A](a:A):Parser[A]
+  def label[A](msg: String)(p: Parser[A]): Parser[A]
+  def scope[A](msg: String)(p: Parser[A]): Parser[A]
 
   def run[A](p: Parser[A])(input: String):Either[ParseError,A]
 
@@ -53,7 +55,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def parseBoolean:Parser[Boolean] = (string("true") | string("false")).map(s => s.toBoolean)
 
-  def whitespace:Parser[String] = "[\\s\\t\\n]+".r.map(s => "")
+  def whitespace:Parser[String] = label("whitespace not found")("[\\s\\t\\n]+".r).map(s => "")
 
   def quotedString:Parser[String] = "[\\\"]{1}[\\w\\s]+[\\\"]{1}".r.map(s => s.replace("\"","")) | "[\\\']{1}[\\w\\s]+[\\\']{1}".r
       .map(s =>  s.replace("\'",""))
@@ -109,4 +111,5 @@ case class ParseError(stack: List[(Location,String)] = List(),
   def latest = stack.lastOption
   def latestLocation = latest.map(_._1)
   def label[A](s: String): ParseError = ParseError(latestLocation.map((_,s)).toList)
+  def scope[A](s: String): ParseError = ParseError(latest.map{ p => (p._1, s"$s: ${p._2}")}.toList)
 }

@@ -137,7 +137,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	}
 	it should "return failure" in {
 		val result = r(whitespace)("abc")
-		result should be (Left(ParseError(List((Location("abc",0),"[\\s\\t\\n]+")))))
+		result should be (Left(ParseError(List((Location("abc",0),"whitespace not found")))))
 	}
 
 	behavior of "quotedString"
@@ -161,5 +161,11 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	it should "return expected label on failure" in {
 		val result = r(label("ruh-roh")(integer))("abc")
 		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh")))))
+	}
+
+	behavior of "scope"
+	it should "add information to failures" in {
+		val result = r(scope("ruh-roh")("def"))("abc")
+		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh: def")))))
 	}
 }

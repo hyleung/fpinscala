@@ -84,6 +84,13 @@ object Reference extends Parsers[Parser] {
 		}
 	}
 
+	def scope[A](msg: String)(p:Parser[A]):Parser[A] = s => {
+		p(s) match {
+			case s@Success(_,_) => s
+			case f@Failure(_,committed) => f.mapError(err => err.scope(msg))
+		}
+	}
+
 	override def run[A](p: Parser[A])(input: String): Either[ParseError, A] =  {
 		val state = ParseState(Location(input))
 		p(state) match  {
