@@ -159,13 +159,13 @@ class ReferenceSpec extends FlatSpec with Matchers{
 
 	behavior of "label"
 	it should "return expected label on failure" in {
-		val result = r(label("ruh-roh")(integer))("abc")
+		val result = r(integer label "ruh-roh")("abc")
 		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh")))))
 	}
 
 	behavior of "scope"
 	it should "add information to failures" in {
-		val result = r(scope("ruh-roh")("def"))("abc")
+		val result = r("def" scope "ruh-roh")("abc")
 		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh: def")))))
 	}
 }

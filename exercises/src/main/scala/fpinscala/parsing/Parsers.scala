@@ -55,7 +55,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def parseBoolean:Parser[Boolean] = (string("true") | string("false")).map(s => s.toBoolean)
 
-  def whitespace:Parser[String] = label("whitespace not found")("[\\s\\t\\n]+".r).map(s => "")
+  def whitespace:Parser[String] = ("[\\s\\t\\n]+".r label "whitespace not found").map(s => "")
 
   def quotedString:Parser[String] = "[\\\"]{1}[\\w\\s]+[\\\"]{1}".r.map(s => s.replace("\"","")) | "[\\\']{1}[\\w\\s]+[\\\']{1}".r
       .map(s =>  s.replace("\'",""))
@@ -70,6 +70,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     def map [B](f: A => B):Parser[B] = self.map(p)(f)
     def ** [B>:A](p2:Parser[B]):Parser[(A,B)] = self.product(p,p2)
     def flatMap [B](f: A => Parser[B]):Parser[B] = self.flatMap(p)(f)
+    def label(msg:String):Parser[A] = self.label(msg)(p)
+    def scope(msg:String):Parser[A] = self.scope(msg)(p)
   }
 
   object Laws {
