@@ -1,6 +1,8 @@
 package fpinscala.parsing
 
 import java.util.regex._
+import fpinscala.parsing.ReferenceTypes.Failure
+
 import scala.util.matching.Regex
 import fpinscala.testing._
 import fpinscala.testing.Prop._
@@ -104,4 +106,7 @@ case class Location(input: String, offset: Int = 0) {
 
 case class ParseError(stack: List[(Location,String)] = List(),
                       otherFailures: List[ParseError] = List()) {
+  def latest = stack.lastOption
+  def latestLocation = latest.map(_._1)
+  def label[A](s: String): ParseError = ParseError(latestLocation.map((_,s)).toList)
 }

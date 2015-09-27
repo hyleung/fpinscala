@@ -157,4 +157,9 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		}
 	}
 
+	behavior of "label"
+	it should "return expected label on failure" in {
+		val result = r(label("ruh-roh")(integer))("abc")
+		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh")))))
+	}
 }

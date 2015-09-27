@@ -19,7 +19,13 @@ object ReferenceTypes {
 	case class ParseState(loc: Location){}
 
 	//Result types
-	sealed trait Result[+A] {}
+	sealed trait Result[+A] {
+		/* Used by `scope`, `label`. */
+		def mapError(f: ParseError => ParseError): Result[A] = this match {
+			case Failure(e,c) => Failure(f(e),c)
+			case _ => this
+		}
+	}
 	case class Success[+A](get: A, length: Int) extends Result[A]
 	case class Failure(get: ParseError, isCommitted: Boolean) extends Result[Nothing]
 }
@@ -70,6 +76,13 @@ object Reference extends Parsers[Parser] {
 	}
 
 	override def succeed[A](a: A): Parser[A] = s => Success(a,0)
+
+	def label[A](msg: String)(p: Parser[A]): Parser[A] = s => {
+		p(s) match {
+			case s@Success(_,_) => s
+			case f@Failure(_,committed) => f.mapError(err => err.label(msg))
+		}
+	}
 
 	override def run[A](p: Parser[A])(input: String): Either[ParseError, A] =  {
 		val state = ParseState(Location(input))
