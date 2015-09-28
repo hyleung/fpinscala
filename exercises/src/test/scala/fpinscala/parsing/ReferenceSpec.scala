@@ -27,13 +27,13 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val p = string("abra")
 		val result = r(p)("aAbra cadAbra")
 		result should be (Left(ParseError(
-			List((Location("aAbra cadAbra",1),"abra")))))
+			List((Location("aAbra cadAbra",1),"'abra'")))))
 	}
 	it should "return failure if search string is longer" in {
 		val p = string("abracadabra")
 		val result = r(p)("abra")
 		result should be (Left(ParseError(
-			List((Location("abra",4),"abracadabra")))))
+			List((Location("abra",4),"'abracadabra'")))))
 	}
 	behavior of "regex"
 	it should "return success" in {
@@ -64,7 +64,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val p1 = string("hello")
 		val p2 = string("hey,")
 		val result = r(p1 or p2)("blah parser")
-		result should be (Left(ParseError(List((Location("blah parser",0),"hello"),(Location("blah parser",0),"hey,")))))
+		result should be (Left(ParseError(List((Location("blah parser",0),"'hello'"),(Location("blah parser",0),"'hey,'")))))
 	}
 
 	behavior of "flatMap"
@@ -76,7 +76,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	it should "return failure" in {
 		val p = string("hello").flatMap(s => succeed(s))
 		val result = r(p)("HELLO world")
-		result should be (Left(ParseError(List((Location("HELLO world",0),"hello")))))
+		result should be (Left(ParseError(List((Location("HELLO world",0),"'hello'")))))
 	}
 	behavior of "nChars"
 	it should "return the number of matched chars" in {
@@ -115,7 +115,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	}
 	it should "return failure" in {
 		val result = r(parseBoolean)("blargh")
-		result should be (Left(ParseError(List((Location("blargh",0),"true"),(Location("blargh",0),"false")))))
+		result should be (Left(ParseError(List((Location("blargh",0),"'true'"),(Location("blargh",0),"'false'")))))
 	}
 
 	behavior of "whitespace"
@@ -166,7 +166,7 @@ class ReferenceSpec extends FlatSpec with Matchers{
 	behavior of "scope"
 	it should "add information to failures" in {
 		val result = r("def" scope "ruh-roh")("abc")
-		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh: def")))))
+		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh: 'def'")))))
 	}
 
 	behavior of "slice"

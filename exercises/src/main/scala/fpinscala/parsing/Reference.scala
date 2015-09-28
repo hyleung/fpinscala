@@ -35,12 +35,13 @@ import fpinscala.parsing.ReferenceTypes.Parser
 object Reference extends Parsers[Parser] {
 	// so inner classes may call methods of trait
 	override implicit def string(a: String): Parser[String] = s => {
+		val msg = s"'$a'"
 		val idx = findMismatchIndex(s.loc.input, a, s.loc.offset)
 		if (idx == -1) {
 			Success(a, a.length)
 		} else {
 			val newLocation = Location(s.loc.input, s.loc.offset + idx)
-			Failure(ParseError(List((newLocation,a))), isCommitted = true)
+			Failure(ParseError(List((newLocation,a))).label(msg), isCommitted = true)
 		}
 
 	}
