@@ -99,6 +99,15 @@ object Reference extends Parsers[Parser] {
 		}
 	}
 
+	def slice[A](p: Parser[A]): Parser[String] = s => {
+		p(s) match {
+			case Success(a,l) =>
+				val substring: String = s.loc.input.substring(s.loc.offset, s.loc.offset + l)
+				Success(substring, l)
+			case f@Failure(_,_) => f
+		}
+	}
+
 	/** Returns -1 if s1.startsWith(s2), otherwise returns the
 	  * first index where the two strings differed. If s2 is
 	  * longer than s1, returns s1.length. */

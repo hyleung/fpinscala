@@ -168,4 +168,12 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r("def" scope "ruh-roh")("abc")
 		result should be (Left(ParseError(List((Location("abc",0),"ruh-roh: def")))))
 	}
+
+	behavior of "slice"
+	it should "return input if parser matches" in {
+		val input = "abc"
+		val result = r(slice("ab"))(input)
+		result should be (Right("ab"))
+	}
+
 }

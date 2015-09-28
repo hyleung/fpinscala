@@ -11,7 +11,10 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   //primitives
   implicit def string(s:String):Parser[String]
   implicit def regex(r:Regex):Parser[String]
-  def slice[A](p:Parser[A]):Parser[String] = ???
+  /**
+   * Returns the portion of input inspected by p if successful
+   */
+  def slice[A](p:Parser[A]):Parser[String]
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]):Parser[B]
   def or[A](s1: Parser[A], s2: Parser[A]):Parser[A]
   def succeed[A](a:A):Parser[A]
@@ -21,6 +24,14 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def run[A](p: Parser[A])(input: String):Either[ParseError,A]
 
   //combinators
+  /** Sequences two parsers, ignoring the result of the first.
+    * We wrap the ignored half in slice, since we don't care about its result. */
+  def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] = ???
+
+  /** Sequences two parsers, ignoring the result of the second.
+    * We wrap the ignored half in slice, since we don't care about its result. */
+  def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = ???
+
   def char(c:Char):Parser[Char] = string(c.toString).map(_.charAt(0))
 
   def listOfN[A](n: Int, p:Parser[A]):Parser[List[A]] = map2(p,listOfN(n -1, p))(_ :: _) | succeed(List())
