@@ -16,13 +16,27 @@ object ReferenceTypes {
 	/** A parser is a kind of state action that can fail. */
 	type Parser[+A] = ParseState => Result[A]
 
-	case class ParseState(loc: Location){}
+	case class ParseState(loc: Location){
+		/* return a new state with location advanced by numChars */
+		def advanceBy(numChars: Int): ParseState =
+			copy(loc = loc.copy(offset = loc.offset + numChars))
+		def slice(n: Int) = loc.input.substring(loc.offset, loc.offset + n)
+	}
 
 	//Result types
 	sealed trait Result[+A] {
 		/* Used by `scope`, `label`. */
 		def mapError(f: ParseError => ParseError): Result[A] = this match {
 			case Failure(e,c) => Failure(f(e),c)
+			case _ => this
+		}
+		def advanceSuccess(n: Int): Result[A] = this match {
+			case Success(a,m) => Success(a,n+m)
+			case _ => this
+		}
+		/* Used by `flatMap` */
+		def addCommit(isCommitted: Boolean): Result[A] = this match {
+			case Failure(e,c) => Failure(e, c || isCommitted)
 			case _ => this
 		}
 	}
@@ -49,15 +63,13 @@ object Reference extends Parsers[Parser] {
 	override implicit def regex(r: Regex): Parser[String] = s => {
 		r.findPrefixMatchOf(s.loc.input) match {
 			case Some(m) => Success(m.matched,m.end - m.start)
-			case None => Failure(ParseError(List((Location(s.loc.input,0),r.toString()))), isCommitted = true)
+			case None => Failure(ParseError(List((Location(s.loc.input,0),r.toString()))), isCommitted = false)
 		}
 	}
 
 	override def flatMap[A, B](p: Parser[A])(f: (A) => Parser[B]): Parser[B] = s => {
 		p(s) match {
-			case Success(a,l) =>
-				val nextState = ParseState(Location(s.loc.input,s.loc.offset + l))
-				f(a)(nextState)
+			case Success(a,l) => f(a)(s.advanceBy(l)).addCommit(l !=0).advanceSuccess(l)
 			case fail:Failure => fail
 		}
 	}
@@ -102,9 +114,7 @@ object Reference extends Parsers[Parser] {
 
 	def slice[A](p: Parser[A]): Parser[String] = s => {
 		p(s) match {
-			case Success(a,l) =>
-				val substring: String = s.loc.input.substring(s.loc.offset, s.loc.offset + l)
-				Success(substring, l)
+			case Success(a,l) => Success(s.slice(l), l)
 			case f@Failure(_,_) => f
 		}
 	}
@@ -114,7 +124,7 @@ object Reference extends Parsers[Parser] {
 	  * longer than s1, returns s1.length. */
 	def findMismatchIndex(s1:String, s2:String, offset:Int): Int = {
 		var i = 0
-		while (i < s1.length && i < s2.length) {
+		while (i + offset < s1.length && i < s2.length) {
 			if (s1.charAt(i+offset) != s2.charAt(i)) return i
 			i += 1
 		}

@@ -1,5 +1,6 @@
 package fpinscala.parsing
 
+import fpinscala.parsing.ReferenceTypes.{Success, ParseState}
 import org.scalatest.{Matchers, FlatSpec}
 
 /**
@@ -22,6 +23,11 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val p = string("abra")
 		val result = r(p)("abra cadabra")
 		result should be (Right("abra"))
+	}
+	it should "return success with correct length" in {
+		val p = string("abra")
+		val result = p(ParseState(Location("abracadabra")))
+		result should be (Success("abra",4))
 	}
 	it should "return failure" in {
 		val p = string("abra")
@@ -67,22 +73,38 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		result should be (Left(ParseError(List((Location("blah parser",0),"'hello'"),(Location("blah parser",0),"'hey,'")))))
 	}
 
+	behavior of "many"
+	it should "match many" in {
+		val result = r(char('a').many)("aaaaa")
+		result should be (Right(List('a','a','a','a','a')))
+	}
+
 	behavior of "flatMap"
 	it should "chain multiple parsers" in {
-		val p = string("hello").flatMap(s => map2(succeed(s),string("world"))((a,b) => b + a))
-		val result = r(p)("helloworld")
-		result should be (Right("worldhello"))
+		val p = string("hello").flatMap(s => map2(succeed(s),string("world!"))((a,b) => b + a))
+		val result = r(p)("helloworld!")
+		result should be (Right("world!hello"))
+	}
+	it should "work with for comprehensions" in {
+		val p = for {
+			a <- string("hello")
+			b <- string(" ")
+			c <- string("world")
+		} yield (a,b,c)
+		val result = r(p)("hello world")
+		result should be (Right(("hello"," ", "world")))
 	}
 	it should "return failure" in {
 		val p = string("hello").flatMap(s => succeed(s))
 		val result = r(p)("HELLO world")
 		result should be (Left(ParseError(List((Location("HELLO world",0),"'hello'")))))
 	}
-	behavior of "nChars"
-	it should "return the number of matched chars" in {
-		val p = nChars('a')
-		val result = r(p)("3aaa")
-		result should be (Right(3))
+
+	behavior of "product"
+	it should "return pair" in {
+		val p = "hello" ** "world"
+		val result = r(p)("helloworld")
+		result should be(Right("hello", "world"))
 	}
 	behavior of "double"
 	it should "return a double on successful parsing" in {
@@ -174,6 +196,12 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val input = "abc"
 		val result = r(slice("ab"))(input)
 		result should be (Right("ab"))
+	}
+	it should "match example in book" in {
+		val input = "aaba"
+		val p = slice((char('a')|char('b')).many)
+		val result = r(p)(input)
+		result should be (Right("aaba"))
 	}
 
 }
