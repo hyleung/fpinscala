@@ -26,11 +26,11 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   //combinators
   /** Sequences two parsers, ignoring the result of the first.
     * We wrap the ignored half in slice, since we don't care about its result. */
-  def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] = map2(slice(p), p2)((a,b) => b)
+  def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] = map2(slice(p), p2)((_,b) => b)
 
   /** Sequences two parsers, ignoring the result of the second.
     * We wrap the ignored half in slice, since we don't care about its result. */
-  def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = ???
+  def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = map2(p, slice(p2))((a,_) => a)
 
   def char(c:Char):Parser[Char] = string(c.toString).map(_.charAt(0))
 

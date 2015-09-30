@@ -210,4 +210,21 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("abcdefgh")
 		result should be (Right("fgh"))
 	}
+
+	behavior of "skipR"
+	it should "return result of first parser" in {
+		val p = skipR("abcde", "fgh")
+		val result = r(p)("abcdefgh")
+		result should be (Right("abcde"))
+	}
+
+	behavior of "magic spell or gibberish"
+	it should "parse magic" in {
+		val spaces = " ".many
+		val p1 = scope("magic spell") {
+			"abra" ** spaces ** "cadabra"
+		}
+		val result = r(p1)("abra cadabra")
+		result should be (Right(("abra",List(" ")), "cadabra"))
+	}
 }
