@@ -204,4 +204,10 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		result should be (Right("aaba"))
 	}
 
+	behavior of "skipL"
+	it should "return result of second parser" in {
+		val p = skipL("abcde", "fgh")
+		val result = r(p)("abcdefgh")
+		result should be (Right("fgh"))
+	}
 }

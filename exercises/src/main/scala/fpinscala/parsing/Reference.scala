@@ -57,7 +57,6 @@ object Reference extends Parsers[Parser] {
 			val newLocation = Location(s.loc.input, s.loc.offset + idx)
 			Failure(ParseError(List((newLocation,a))).label(msg), isCommitted = true)
 		}
-
 	}
 
 	override implicit def regex(r: Regex): Parser[String] = s => {
