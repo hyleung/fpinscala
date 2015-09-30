@@ -210,10 +210,20 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		val result = r(p)("abcdefgh")
 		result should be (Right("fgh"))
 	}
+	it should "return result of second parser with operator" in {
+		val p = "abcde" *> "fgh"
+		val result = r(p)("abcdefgh")
+		result should be (Right("fgh"))
+	}
 
 	behavior of "skipR"
 	it should "return result of first parser" in {
 		val p = skipR("abcde", "fgh")
+		val result = r(p)("abcdefgh")
+		result should be (Right("abcde"))
+	}
+	it should "return result of first parser with operator" in {
+		val p = "abcde" <* "fgh"
 		val result = r(p)("abcdefgh")
 		result should be (Right("abcde"))
 	}
