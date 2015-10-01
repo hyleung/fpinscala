@@ -68,8 +68,16 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def whitespace:Parser[String] = ("[\\s\\t\\n]+".r label "whitespace not found").map(s => "")
 
-  def quotedString:Parser[String] = "[\\\"]{1}[\\w\\s]+[\\\"]{1}".r.map(s => s.replace("\"","")) | "[\\\']{1}[\\w\\s]+[\\\']{1}".r
-      .map(s =>  s.replace("\'",""))
+  def quotedString:Parser[String] = doubleQuotedString | singleQuotedString label "quoted string"
+
+  def singleQuotedString: Parser[String] = {
+    "[\\\']{1}[\\w\\s]+[\\\']{1}".r
+        .map(s => s.replace("\'", ""))
+  }
+
+  def doubleQuotedString: Parser[String] = {
+    "[\\\"]{1}[\\w\\s]+[\\\"]{1}".r.map(s => s.replace("\"", ""))
+  }
 
   def surround[A](p:Parser[A])(start:Parser[Any], end:Parser[Any]):Parser[A] = start *> p <* end
 
