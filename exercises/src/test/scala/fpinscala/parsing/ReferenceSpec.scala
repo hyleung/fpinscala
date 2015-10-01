@@ -228,6 +228,18 @@ class ReferenceSpec extends FlatSpec with Matchers{
 		result should be (Right("abcde"))
 	}
 
+	behavior of "surround"
+	it should "return just the middle" in {
+		val p = surround("hello")("{","}")
+		val result = r(p)("{hello}")
+		result should be (Right("hello"))
+	}
+	it should "return just the middle with operator" in {
+		val p = "hello".surroundWith("{","}")
+		val result = r(p)("{hello}")
+		result should be (Right("hello"))
+	}
+
 	behavior of "magic spell or gibberish"
 	it should "parse magic" in {
 		val spaces = " ".many

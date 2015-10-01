@@ -71,6 +71,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def quotedString:Parser[String] = "[\\\"]{1}[\\w\\s]+[\\\"]{1}".r.map(s => s.replace("\"","")) | "[\\\']{1}[\\w\\s]+[\\\']{1}".r
       .map(s =>  s.replace("\'",""))
 
+  def surround[A](p:Parser[A])(start:Parser[Any], end:Parser[Any]):Parser[A] = start *> p <* end
+
   implicit def operators[A](p:Parser[A]): ParserOps[A] = ParserOps[A](p)
   implicit def asStringParser[A](a:A)(implicit f: A => Parser[String]):ParserOps[String] = ParserOps(f(a))
 
@@ -85,6 +87,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     def scope(msg:String):Parser[A] = self.scope(msg)(p)
     def *>[B](p2: => Parser[B]) = self.skipL(p, p2)
     def <*(p2: => Parser[Any]) = self.skipR(p, p2)
+    def surroundWith(start:Parser[Any], end:Parser[Any]):Parser[A] = self.surround(p)(start, end);
   }
 
   object Laws {
