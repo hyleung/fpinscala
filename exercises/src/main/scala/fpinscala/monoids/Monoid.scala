@@ -20,13 +20,25 @@ object Monoid {
     val zero = Nil
   }
 
-  val intAddition: Monoid[Int] = sys.error("todo")
+  val intAddition: Monoid[Int] = new Monoid[Int]{
+    def op(a1: Int, a2:Int) = a1 + a2
+    def zero = 0
+  }
 
-  val intMultiplication: Monoid[Int] = sys.error("todo")
+  val intMultiplication: Monoid[Int] = new Monoid[Int]{
+    def op(a1: Int, a2: Int) = a1 * a2
+    def zero = 0
+  }
 
-  val booleanOr: Monoid[Boolean] = sys.error("todo")
+  val booleanOr: Monoid[Boolean] = new Monoid[Boolean]{
+    def op(b1:Boolean, b2:Boolean) = b1 || b2
+    def zero = false
+  }
 
-  val booleanAnd: Monoid[Boolean] = sys.error("todo")
+  val booleanAnd: Monoid[Boolean] = new Monoid[Boolean]{
+    def op(b1:Boolean, b2:Boolean) = b1 && b2
+    def zero = true
+  }
 
   def optionMonoid[A]: Monoid[Option[A]] = sys.error("todo")
 
