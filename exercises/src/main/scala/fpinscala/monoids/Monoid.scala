@@ -45,7 +45,13 @@ object Monoid {
     def zero: Option[A] = None
   }
 
-  def endoMonoid[A]: Monoid[A => A] = sys.error("todo")
+  def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
+    //compose makes a new function that composes other functions
+    //f compose g = f(g(x))
+    //vs andThen, which is f andThen g = g(f(x))
+    def op(a1: (A) => A, a2: (A) => A): (A) => A = a1 compose a2
+    def zero: (A) => A = (a:A) => a
+  }
 
   // TODO: Placeholder for `Prop`. Remove once you have implemented the `Prop`
   // data type from Part 2.
