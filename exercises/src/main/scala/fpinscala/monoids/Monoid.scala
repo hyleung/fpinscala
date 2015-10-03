@@ -1,7 +1,10 @@
 package fpinscala.monoids
 
 import fpinscala.parallelism.Nonblocking._
-import fpinscala.parallelism.Nonblocking.Par.toParOps // infix syntax for `Par.map`, `Par.flatMap`, etc
+import fpinscala.parallelism.Nonblocking.Par.toParOps
+import fpinscala.state.RNG.Simple
+
+// infix syntax for `Par.map`, `Par.flatMap`, etc
 
 trait Monoid[A] {
   def op(a1: A, a2: A): A
@@ -53,16 +56,22 @@ object Monoid {
     def zero: (A) => A = (a:A) => a
   }
 
-  // TODO: Placeholder for `Prop`. Remove once you have implemented the `Prop`
-  // data type from Part 2.
-  trait Prop {}
-
-  // TODO: Placeholder for `Gen`. Remove once you have implemented the `Gen`
-  // data type from Part 2.
 
   import fpinscala.testing._
   import Prop._
-  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = sys.error("todo")
+  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
+    val associative:Prop = forAll(
+      for {
+        x <- gen
+        y <- gen
+        z <- gen
+      } yield(x,y,z)
+    ){ case(x,y,z) => m.op(x,m.op(y,z)) == m.op(m.op(x,y),z) }
+
+    val zero:Prop = forAll(gen)(x => m.op(x,m.zero) == x)
+    associative && zero
+  }
+
 
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 
@@ -94,7 +103,7 @@ object Monoid {
   def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
     sys.error("todo") 
 
-  val wcMonoid: Monoid[WC] = sys.error("todo")
+  //val wcMonoid: Monoid[WC] = ???
 
   def count(s: String): Int = sys.error("todo")
 
