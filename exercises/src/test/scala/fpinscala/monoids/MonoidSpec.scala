@@ -14,13 +14,13 @@ class MonoidSpec extends FlatSpec with Matchers{
 	it should "obey monoid laws" in {
 		val m = Monoid.intAddition
 		val g = Gen.choose(Int.MinValue,Int.MaxValue)
-		Monoid.monoidLaws[Int](m,g)
+		Monoid.monoidLaws(m)(g)
 	}
 	behavior of "int multiplication monoid"
 	it should "obey monoid laws" in {
 		val m = Monoid.intMultiplication
 		val g = Gen.choose(Int.MinValue,Int.MaxValue)
-		Monoid.monoidLaws[Int](m,g)
+		Monoid.monoidLaws(m)(g)
 	}
 
 }
