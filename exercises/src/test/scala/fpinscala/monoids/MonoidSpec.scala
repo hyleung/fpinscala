@@ -37,4 +37,15 @@ class MonoidSpec extends FlatSpec with Matchers{
 		Monoid.monoidLaws(m)(g)
 	}
 
+	behavior of "concatenate"
+	it should "work for ints" in {
+		val list = List(1,2,3,4,5)
+		val result = Monoid.concatenate(list,Monoid.intAddition)
+		result should be (15)
+	}
+	it should "work for strings" in {
+		val list = List("shazam","and","abra","cadabra")
+		val result = Monoid.concatenate(list, Monoid.stringMonoid)
+		result should be ("shazamandabracadabra")
+	}
 }
