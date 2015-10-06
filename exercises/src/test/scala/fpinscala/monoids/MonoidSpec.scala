@@ -48,4 +48,16 @@ class MonoidSpec extends FlatSpec with Matchers{
 		val result = Monoid.concatenate(list, Monoid.stringMonoid)
 		result should be ("shazamandabracadabra")
 	}
+
+	behavior of "foldMap"
+	it should "map function over list with intAddition" in {
+		val list = List(1,2,3,4,5)
+		val result = Monoid.foldMap(list,Monoid.intAddition)(x => x * 2)
+		result should be (30)
+	}
+	it should "map function over list with string monoid" in {
+		val list = List(1,2,3,4,5)
+		val result = Monoid.foldMap(list,Monoid.stringMonoid)(x => x.toString)
+		result should be ("12345")
+	}
 }
