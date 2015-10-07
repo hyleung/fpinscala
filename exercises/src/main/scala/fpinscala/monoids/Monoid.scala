@@ -72,6 +72,13 @@ object Monoid {
     associative && zero
   }
 
+  class CheckableMonoid[A](m:Monoid[A]) {
+    def check(implicit g:Gen[A]) = monoidLaws(m)(g)
+  }
+
+  object MonoidLaws {
+    implicit def toCheckable[A](m:Monoid[A]):CheckableMonoid[A] = new CheckableMonoid(m)
+  }
 
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 
@@ -81,8 +88,7 @@ object Monoid {
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
     as.foldRight(m.zero)((a,b) => m.op(f(a),b))
 
-  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
-    sys.error("todo")
+  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = ???
 
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     sys.error("todo")
