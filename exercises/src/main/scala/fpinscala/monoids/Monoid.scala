@@ -99,8 +99,15 @@ object Monoid {
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as,dual(endoMonoid[B]))(a => b => f(b,a))(z)
 
-  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
-    sys.error("todo")
+  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = as match {
+    case seq if seq.isEmpty => m.zero
+    case seq if seq.length == 1 => f(seq.head)
+    case seq  =>
+      val split = seq.length/2
+      val (l,r) = seq.splitAt(split)
+      m.op( foldMapV(l,m)(f), foldMapV(r,m)(f))
+  }
+
 
   def ordered(ints: IndexedSeq[Int]): Boolean =
     sys.error("todo")
@@ -109,11 +116,11 @@ object Monoid {
   case class Stub(chars: String) extends WC
   case class Part(lStub: String, words: Int, rStub: String) extends WC
 
-  def par[A](m: Monoid[A]): Monoid[Par[A]] = 
+  def par[A](m: Monoid[A]): Monoid[Par[A]] =
     sys.error("todo")
 
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
-    sys.error("todo") 
+  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
+    sys.error("todo")
 
   //val wcMonoid: Monoid[WC] = ???
 

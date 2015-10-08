@@ -55,4 +55,11 @@ class MonoidSpec extends FlatSpec with Matchers{
 		val result = Monoid.foldMap(list,Monoid.stringMonoid)(x => x.toString)
 		result should be ("12345")
 	}
+
+	behavior of "foldMapV"
+	it should "map function over list with intAddiion" in {
+		val list = Range(1,6)
+		val result = Monoid.foldMapV(list,Monoid.intAddition)(x => x * 2)
+		result should be (30)
+	}
 }
