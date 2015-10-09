@@ -31,6 +31,12 @@ class MonoidSpec extends FlatSpec with Matchers{
 	it should "hold for string addition monoid" in {
 		stringMonoid.check
 	}
+	it should "hold for wc monoid" in {
+		val stubGen:Gen[WC] = genString.map(Stub)
+		val partGen:Gen[WC] = genString.listOfN(2).flatMap(l => genInt.map(i => Part(l.head, i, l.tail.head)))
+		implicit val wcGen = Gen.union(stubGen, partGen)
+		wcMonoid.check
+	}
 
 	behavior of "concatenate"
 	it should "work for ints" in {

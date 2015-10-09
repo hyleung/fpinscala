@@ -122,7 +122,16 @@ object Monoid {
   def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
     sys.error("todo")
 
-  //val wcMonoid: Monoid[WC] = ???
+  val wcMonoid: Monoid[WC] = new Monoid[WC] {
+    def op(a1: WC, a2: WC): WC = (a1,a2) match {
+      case (Stub(a),Stub(b)) => Stub(a + b)
+      case (Stub(a),Part(l,c,r)) => Part(a + l, c, r)
+      case (Part(l,c,r),Stub(a)) => Part(l, c, r+ a)
+      case (Part(la,ca,ra),Part(lb,cb,rb)) => Part(la + lb, ca + cb, ra + rb)
+    }
+
+    def zero: WC = Part("",0,"")
+  }
 
   def count(s: String): Int = sys.error("todo")
 
