@@ -127,10 +127,11 @@ object Monoid {
       case (Stub(a),Stub(b)) => Stub(a + b)
       case (Stub(a),Part(l,c,r)) => Part(a + l, c, r)
       case (Part(l,c,r),Stub(a)) => Part(l, c, r+ a)
-      case (Part(la,ca,ra),Part(lb,cb,rb)) => Part(la + lb, ca + cb, ra + rb)
+      case (Part(la,ca,ra),Part(lb,cb,rb)) =>
+        Part(la, ca + (if ((ra + lb).isEmpty) 0 else 1) + cb, ra)
     }
 
-    def zero: WC = Part("",0,"")
+    def zero: WC = Stub("")
   }
 
   def count(s: String): Int = sys.error("todo")
