@@ -68,4 +68,15 @@ class MonoidSpec extends FlatSpec with Matchers{
 		val result = Monoid.foldMapV(list,Monoid.intAddition)(x => x * 2)
 		result should be (30)
 	}
+
+	behavior of "count (number of words in a string)"
+	it should "count the number of words in an empty string" in {
+		count("") should be (0)
+	}
+	it should "count the number of words in an single string" in {
+		count("foo") should be (1)
+	}
+	it should "count the number of words in a string" in {
+		count("lorem ipsum dolor sit amet") should be (5)
+	}
 }
