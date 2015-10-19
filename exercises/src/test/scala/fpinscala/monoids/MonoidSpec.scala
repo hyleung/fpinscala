@@ -79,4 +79,20 @@ class MonoidSpec extends FlatSpec with Matchers{
 	it should "count the number of words in a string" in {
 		count("lorem ipsum dolor sit amet") should be (5)
 	}
+
+	behavior of "map merge monoid"
+	it should "merge maps" in {
+		val m1 = Map("a" ->"larry", "b" -> "moe")
+		val m2 = Map("c" -> "curly")
+		val monoid:Monoid[Map[String,String]] = Monoid.mapMergeMonoid(stringMonoid)
+		val result = monoid.op(m1,m2)
+		result should be (Map("a" -> "larry", "b" -> "moe", "c" -> "curly"))
+	}
+	it should "merge maps with duplicates" in {
+		val m1 = Map("a" ->"larry", "b" -> "moe")
+		val m2 = Map("c" -> "curly","a" -> "ellison")
+		val monoid:Monoid[Map[String,String]] = Monoid.mapMergeMonoid(stringMonoid)
+		val result = monoid.op(m1,m2)
+		result should be (Map("a" -> "larryellison", "b" -> "moe", "c" -> "curly"))
+	}
 }
