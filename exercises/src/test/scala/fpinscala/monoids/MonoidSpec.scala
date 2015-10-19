@@ -95,4 +95,11 @@ class MonoidSpec extends FlatSpec with Matchers{
 		val result = monoid.op(m1,m2)
 		result should be (Map("a" -> "larryellison", "b" -> "moe", "c" -> "curly"))
 	}
+
+	behavior of "bag"
+	it should "count number of each entry" in {
+		val data = IndexedSeq("a","b","c","a","a","c")
+		val result = bag(data)
+		result should be (Map("a" -> 3, "b" -> 1, "c" -> 2))
+	}
 }
