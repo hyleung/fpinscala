@@ -60,19 +60,38 @@ object Monad {
       ma flatMap f
   }
 
-  val parMonad: Monad[Par] = ???
+  val parMonad: Monad[Par] = new Monad[Par] {
+    def flatMap[A, B](ma: Par[A])(f: (A) => Par[B]): Par[B] = ma flatMap f
+
+    override def unit[A](a: => A): Par[A] = Par.unit(a)
+  }
 
   def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = ???
 
-  val optionMonad: Monad[Option] = ???
+  val optionMonad: Monad[Option] = new Monad[Option] {
+    def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] = ma flatMap f
 
-  val streamMonad: Monad[Stream] = ???
+    def unit[A](a: => A): Option[A] = Some(a)
+  }
 
-  val listMonad: Monad[List] = ???
+  val streamMonad: Monad[Stream] = new Monad[Stream] {
+    def flatMap[A, B](ma: Stream[A])(f: (A) => Stream[B]): Stream[B] = ma flatMap f
+
+    def unit[A](a: => A): Stream[A] = Stream(a)
+  }
+
+  val listMonad: Monad[List] = new Monad[List] {
+    def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] = ma flatMap f
+
+    def unit[A](a: => A): List[A] = List(a)
+  }
 
   def stateMonad[S] = ???
 
-  val idMonad: Monad[Id] = ???
+  val idMonad: Monad[Id] = new Monad[Id] {
+    def flatMap[A, B](ma: Id[A])(f: (A) => Id[B]): Id[B] = ma flatMap f
+    def unit[A](a: => A): Id[A] = Id(a)
+  }
 
   def readerMonad[R] = ???
 }
