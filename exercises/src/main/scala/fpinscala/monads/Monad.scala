@@ -60,6 +60,9 @@ trait Monad[M[_]] extends Functor[M] {
 
   // Implement in terms of `join`:
   def __flatMap[A,B](ma: M[A])(f: A => M[B]): M[B] = ???
+
+  def product[A,B](ma: M[A], mb: M[B]):M[(A,B)] =
+    map2(ma,mb)((_,_))
 }
 
 case class Reader[R, A](run: R => A)
@@ -109,6 +112,7 @@ object Monad {
   }
 
   def readerMonad[R] = ???
+
 }
 
 case class Id[A](value: A) {
