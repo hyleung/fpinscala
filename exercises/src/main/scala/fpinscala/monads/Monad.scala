@@ -63,7 +63,8 @@ trait Monad[M[_]] extends Functor[M] {
     flatMap(mma)(ma => ma)
 
   // Implement in terms of `join`:
-  def __flatMap[A,B](ma: M[A])(f: A => M[B]): M[B] = ???
+  def __flatMap[A,B](ma: M[A])(f: A => M[B]): M[B] =
+    join(map(ma)(a => f(a)))
 
   def product[A,B](ma: M[A], mb: M[B]):M[(A,B)] =
     map2(ma,mb)((_,_))
