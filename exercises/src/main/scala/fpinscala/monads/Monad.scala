@@ -121,6 +121,19 @@ object Monad {
     def unit[A](a: => A): Id[A] = Id(a)
   }
 
+  val F = stateMonad[Int]
+  ///State[S,+A](run: S => (A, S))
+  def getState[S]:State[S,S] = State(s => (s,s))
+
+  def setState[S](s: => S):State[S,Unit] = State(_ => ((),s))
+
+   def zipWithIndex[A](as: List[A]):List[(Int,A)] =
+    as.foldLeft(F.unit(List.empty[(Int,A)]))((acc,a) => for {
+      xs <- acc
+      n <- getState
+      _ <- setState(n + 1)
+    } yield (n,a) :: xs).run(0)._1.reverse
+
   def readerMonad[R] = ???
 
 }
