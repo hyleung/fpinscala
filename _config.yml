@@ -12,9 +12,9 @@ email: hy.leung@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
     Notes from self-study of Functional Programming in Scala - https://www.manning.com/books/functional-programming-in-scala.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://yourdomain.com" # the base hostname & protocol for your site
-twitter_username: hyleung 
-github_username: hyleung 
+#url: "http://yourdomain.com" # the base hostname & protocol for your site
+#twitter_username: hyleung 
+#github_username: hyleung 
 
 # Build settings
 markdown: kramdown
