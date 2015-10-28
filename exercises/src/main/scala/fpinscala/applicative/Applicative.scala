@@ -27,7 +27,9 @@ trait Applicative[F[_]] extends Functor[F] {
   def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
     sequence(List.fill(n)(fa))
 
-  def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] = ???
+  //Is this 'product'?
+  def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
+    map2(fa,fb)((_,_))
 
   def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = ???
 
