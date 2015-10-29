@@ -16,7 +16,7 @@ trait Applicative[F[_]] extends Functor[F] {
   def unit[A](a: => A): F[A]
 
   def map[A,B](fa: F[A])(f: A => B): F[B] =
-    apply(unit(f))(fa)
+    apply[A,B](unit(f))(fa)
 
   def sequence[A](fas: List[F[A]]): F[List[A]] =
     traverse(fas)(fa => fa)
@@ -36,6 +36,14 @@ trait Applicative[F[_]] extends Functor[F] {
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
 
   def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ???
+
+  //Exercise 12.2
+  //implement in terms of apply and unit
+  def _map[A,B](fa: F[A])(f: A => B): F[B] = apply[A,B](unit(f))(fa)
+
+  def _map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
+    apply(apply[A,B=>C](unit(f.curried))(fa))(fb)
+
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
