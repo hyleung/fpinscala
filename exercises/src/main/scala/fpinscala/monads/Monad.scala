@@ -44,7 +44,7 @@ trait Monad[M[_]] extends Functor[M] {
     sequence(List.fill(n)(ma))
 
   def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] = ms match {
-    case List.empty => unit(List.empty)
+    case List() => unit(List.empty)
     case x::xs => flatMap(f(x)) { b =>
       if (b) map2(unit(List(x)),filterM(xs)(f))(_ ++ _)
       else filterM(xs)(f)

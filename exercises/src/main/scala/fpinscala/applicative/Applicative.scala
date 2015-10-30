@@ -46,10 +46,10 @@ trait Applicative[F[_]] extends Functor[F] {
 
   //Exercise 12.3
   def map3[A,B,C,D](fa:F[A], fb:F[B], fc:F[C])(f: (A,B,C) => D): F[D] =
-    apply(apply[B,C=>D](_map(fa)(f.curried))(fb))(fc)
+    apply(apply(apply[A,B=>C=>D](unit(f.curried))(fa))(fb))(fc)
 
   def map4[A,B,C,D,E](fa:F[A], fb:F[B], fc:F[C], fd: F[D])(f: (A,B,C,D) => E): F[E] =
-    apply(apply(apply[B,C=>D=>E](_map(fa)(f.curried))(fb))(fc))(fd)
+    apply(apply(apply(apply[A,B=>C=>D=>E](unit(f.curried))(fa))(fb))(fc))(fd)
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
