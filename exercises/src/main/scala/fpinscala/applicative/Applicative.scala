@@ -42,7 +42,11 @@ trait Applicative[F[_]] extends Functor[F] {
   def _map[A,B](fa: F[A])(f: A => B): F[B] = apply[A,B](unit(f))(fa)
 
   def _map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
-    apply(apply[A,B=>C](unit(f.curried))(fa))(fb)
+    apply[B,C](_map(fa)(f.curried))(fb)
+
+  //Exercise 12.3
+  def map3[A,B,C,D](fa:F[A], fb:F[B], fc:F[C])(f: (A,B,C) => D): F[D] =
+    apply(apply[B,C=>D](_map(fa)(f.curried))(fb))(fc)
 
 }
 
