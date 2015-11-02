@@ -53,3 +53,50 @@ Other Monoid instances
 - `optionMonoid:Monoid[Option[A]]`
 - `endoMonoid:Monoid[A=>A]` (an _endofunction_ is a function that has the same argument and return type)
 
+Folding lists with monoids
+
+Look at the signatures of `foldLeft` and `foldRight`.
+
+    def foldLeft[B](z:B)(f:(B,A) => B):B
+
+    def foldRight[B](z:B)(f:(A,B) => B):B
+
+…if `A` and `B` are the same…
+
+    def foldLeft[A](z:A)(f:(A,A) => A):A
+
+    def foldRight[A](z:A)(f:(A,A) => A):A
+
+Notice that `(z:A)` is `zero` and `f:(A,A) => A` is `op`.
+
+…so we can reduce `foldLeft` and `foldRight` for Monoids to:
+
+    def foldLeft[A](monoid.zero)(monoid.op):A
+
+    def foldRight[A](monoid.zero)(monoid.op):A
+
+Since _associativity_ and _identity_ hold for monoids, it doesn't matter which of the fold operations we use.
+
+Assciativity and parallelism
+
+Associativity allows us to chose how we fold over a datastructure (like a list).
+
+`foldLeft` over `a,b,c,d`  would look like this:
+
+    op(op(op(a,b),c),d)
+
+Similarly, `foldRight` over `a,b,c,d` would look like this:
+
+    op(a,op(b,op(c,d)))
+
+When _associativity_ holds we can use a _**balanced**_ fold:
+
+    op(op(a,b),op(c,d))
+
+Using a balanced fold allows us to introduce parallelism, since the inner `op` functions can be evaluated independently of each other.
+
+Signature of a balanced foldMap over an `IndexedSeq`:
+
+    def foldMapV[A,B](v:IndexedSeq[A],m:Monoid[B])(f:A => B):B
+
+
