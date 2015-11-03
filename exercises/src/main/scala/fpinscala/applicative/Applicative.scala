@@ -31,7 +31,8 @@ trait Applicative[F[_]] extends Functor[F] {
   def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
     map2(fa,fb)((_,_))
 
-  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = Applicative.productApplicative[F,G](this)(G)
+  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] =
+    new ProductApplicative[F,G](this,G)
 
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
 
@@ -95,16 +96,15 @@ case class Failure[E](head: E, tail: Vector[E])
 
 case class Success[A](a: A) extends Validation[Nothing, A]
 
+class ProductApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extends  Applicative[({type f[x] = (F[x], G[x])})#f] {
+  override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),g.unit(a))
+
+  override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
+    (self.apply(fab._1)(fa._1),g.apply(fab._2)(fa._2))
+}
 
 object Applicative {
 
-  def productApplicative[F[_],G[_]](self:Applicative[F])(g:Applicative[G]) =  new Applicative[({type f[x] = (F[x], G[x])})#f] {
-    override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),g.unit(a))
-
-    override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
-      (self.apply(fab._1)(fa._1),g.apply(fab._2)(fa._2))
-
-  }
   val streamApplicative = new Applicative[Stream] {
 
     def unit[A](a: => A): Stream[A] =
