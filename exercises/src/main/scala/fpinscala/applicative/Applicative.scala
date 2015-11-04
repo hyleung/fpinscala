@@ -32,9 +32,10 @@ trait Applicative[F[_]] extends Functor[F] {
     map2(fa,fb)((_,_))
 
   def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] =
-    new ProductApplicative[F,G](this,G)
+    new ProductApplicative(this,G)
 
-  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
+  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
+    new ComposeApplicative(this,G)
 
   def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ???
 
@@ -103,6 +104,12 @@ class ProductApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extend
     (self.apply(fab._1)(fa._1),g.apply(fab._2)(fa._2))
 }
 
+class ComposeApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extends Applicative[({type f[x] = F[G[x]]})#f] {
+  override def unit[A](a: => A): F[G[A]] = self.unit(g.unit(a))
+
+  override def map2[A, B, C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] =
+    self.map2(fa,fb)((ga,gb) => g.map2(ga,gb)(f))
+}
 object Applicative {
 
   val streamApplicative = new Applicative[Stream] {
