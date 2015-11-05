@@ -37,7 +37,8 @@ trait Applicative[F[_]] extends Functor[F] {
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
     new ComposeApplicative(this,G)
 
-  def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ???
+  def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] =
+    ofa.foldRight(unit(Map.empty[K,V]))((kv,acc) => map2(kv._2,acc)((a,b) => b + (kv._1 -> a)))
 
   //Exercise 12.2
   //implement in terms of apply and unit
@@ -111,7 +112,6 @@ class ComposeApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extend
     self.map2(fa,fb)((ga,gb) => g.map2(ga,gb)(f))
 }
 object Applicative {
-
   val streamApplicative = new Applicative[Stream] {
 
     def unit[A](a: => A): Stream[A] =
