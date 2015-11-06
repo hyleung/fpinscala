@@ -196,7 +196,12 @@ object Traverse {
       fa.foldLeft(g.unit(List.empty[B]))((acc,a) => g.map2(f(a),acc)(_ :: _))
   }
 
-  val optionTraverse = ???
+  val optionTraverse = new Traverse[Option] {
+    override def traverse[G[_],A, B](fa: Option[A])(f: (A) => G[B])(implicit g:Applicative[G]): G[Option[B]] = fa match {
+      case Some(a) => g.map(f(a))(b => Some(b))
+      case None => g.unit(None)
+    }
+  }
 
   val treeTraverse = ???
 }
