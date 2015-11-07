@@ -203,7 +203,10 @@ object Traverse {
     }
   }
 
-  val treeTraverse = ???
+  val treeTraverse = new Traverse[Tree] {
+    override def traverse[G[_], A, B](fa: Tree[A])(f: (A) => G[B])(implicit g:Applicative[G]): G[Tree[B]] =
+      g.map2(f(fa.head),listTraverse.traverse(fa.tail)(a => traverse(a)(f)))((a,acc) => Tree(a,acc))
+  }
 }
 
 // The `get` and `set` functions on `State` are used above,
