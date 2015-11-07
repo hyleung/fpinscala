@@ -191,6 +191,29 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
                          (implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) = ???
 
   def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = ???
+
+  //This implementation of zip will error if fa and fb are different shapes
+  def zip[A,B](fa:F[A], fb:F[B]):F[(A,B)] =
+    mapAccum(fa, toList(fb)) {
+      case (a, Nil) => ???
+      case (a, b :: bs) => ((a, b), bs)
+    }._1
+
+  //We can have versions of zip that favour either the left or right
+
+  //here, B may or may not have values
+  def zipL[A,B](fa:F[A], fb:F[B]):F[(A,Option[B])] =
+    mapAccum(fa, toList(fb)) {
+      case (a, Nil) => ((a, None), Nil)
+      case (a, b :: bs) => ((a, Some(b)), bs)
+    }._1
+
+  //here, A may or may not have values
+  def zipR[A,B](fa:F[A], fb:F[B]):F[(Option[A],B)] =
+    mapAccum(fb, toList(fa)) {
+      case (b, Nil) => ((None, b), Nil)
+      case (b, a :: as) => ((Some(a), b), as)
+    }._1
 }
 
 object Traverse {
