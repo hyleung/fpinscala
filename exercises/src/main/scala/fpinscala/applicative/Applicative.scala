@@ -143,7 +143,7 @@ object Applicative {
     }
 }
 
-trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
+trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self => //always forget that you can do this...
   def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
     sequence(map(fa)(f))
   def sequence[G[_]:Applicative,A](fma: F[G[A]]): G[F[A]] =
@@ -187,10 +187,17 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
   override def foldLeft[A,B](fa: F[A])(z: B)(f: (B, A) => B): B =
     mapAccum(fa,z)((a,b) => ((), f(b,a)))._2
 
+  //Not sure where the implicit param on the end comes from
   def fuse[G[_],H[_],A,B](fa: F[A])(f: A => G[B], g: A => H[B])
-                         (implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) = ???
+                         (implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) =
+    traverse[({type f[x] = (G[x],H[x])})#f,A,B](fa)(a => (f(a),g(a)))(G product H)
 
-  def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = ???
+  def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] =
+    new Traverse[({type f[x] = F[G[x]]})#f] {
+      override def traverse[M[_]:Applicative,A,B](fa: F[G[A]])(f: A => M[B]) =
+        self.traverse(fa)((ga: G[A]) => G.traverse(ga)(f)) //intellij barfs
+    }
+
 
   //This implementation of zip will error if fa and fb are different shapes
   def zip[A,B](fa:F[A], fb:F[B]):F[(A,B)] =
@@ -215,6 +222,7 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
       case (b, a :: as) => ((Some(a), b), as)
     }._1
 }
+
 
 object Traverse {
   val listTraverse = new Traverse[List] {
