@@ -30,16 +30,20 @@ trait Applicative[F[_]] extends Functor[F] { self =>
   //Is this 'product'?
   def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
     map2(fa,fb)((_,_))
-
+  
   def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = new Applicative[({type f[x] = (F[x], G[x])})#f] {
     override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),G.unit(a))
-blagh
     override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
       (self.apply(fab._1)(fa._1),G.apply(fab._2)(fa._2))
   }
 
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
-    new ComposeApplicative(this,G)
+    new Applicative[({type f[x] = F[G[x]]})#f] {
+      override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+
+      override def map2[A, B, C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] =
+        self.map2(fa,fb)((ga,gb) => G.map2(ga,gb)(f))
+  }
 
   def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] =
     ofa.foldRight(unit(Map.empty[K,V]))((kv,acc) => map2(kv._2,acc)((a,b) => b + (kv._1 -> a)))
@@ -60,7 +64,6 @@ blagh
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
-
 
 trait Monad[F[_]] extends Applicative[F] {
   def flatMap[A,B](ma: F[A])(f: A => F[B]): F[B] = join(map(ma)(f))
@@ -102,19 +105,6 @@ case class Failure[E](head: E, tail: Vector[E])
 
 case class Success[A](a: A) extends Validation[Nothing, A]
 
-class ProductApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extends  Applicative[({type f[x] = (F[x], G[x])})#f] {
-  override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),g.unit(a))
-
-  override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
-    (self.apply(fab._1)(fa._1),g.apply(fab._2)(fa._2))
-}
-
-class ComposeApplicative[F[_],G[_]](self:Applicative[F],g:Applicative[G]) extends Applicative[({type f[x] = F[G[x]]})#f] {
-  override def unit[A](a: => A): F[G[A]] = self.unit(g.unit(a))
-
-  override def map2[A, B, C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] =
-    self.map2(fa,fb)((ga,gb) => g.map2(ga,gb)(f))
-}
 object Applicative {
   val streamApplicative = new Applicative[Stream] {
 
