@@ -99,4 +99,28 @@ Signature of a balanced foldMap over an `IndexedSeq`:
 
     def foldMapV[A,B](v:IndexedSeq[A],m:Monoid[B])(f:A => B):B
 
+Monoid Homomorphisms
+
+"Homomorphism" - "same shape" (i.e. preserves the monoid structure)
+
+Given monoids `M` and `N`, a monoid homomorphism is a function `f: M -> N`, where the monoid laws of associtivity and identity hold.
+
+    M.op(f(x),f(y)) = f(N.op(x,y))
+
+E.g. the function, `length` is a function from `String -> Int`. Taking the length of two strings and adding them together is the same as concatenating two strings and taking the length of the concatenated string. In the definition above, `M` would be `Int`, `N` would be `String` and `f` is `length`.
+
+Two monoids are *isomorphic* if there exists:
+
+    f: M -> N
+    g: N -> M
+
+such that:
+
+    f andThen g
+ 
+and
+
+    g andThen f
+
+...are identity functions
 
