@@ -7,7 +7,7 @@ import State._
 import StateUtil._ // defined at bottom of this file
 import monoids._
 
-trait Applicative[F[_]] extends Functor[F] {
+trait Applicative[F[_]] extends Functor[F] { self =>
 
   def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = ???
 
@@ -31,8 +31,12 @@ trait Applicative[F[_]] extends Functor[F] {
   def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
     map2(fa,fb)((_,_))
 
-  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] =
-    new ProductApplicative(this,G)
+  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = new Applicative[({type f[x] = (F[x], G[x])})#f] {
+    override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),G.unit(a))
+blagh
+    override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
+      (self.apply(fab._1)(fa._1),G.apply(fab._2)(fa._2))
+  }
 
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
     new ComposeApplicative(this,G)
