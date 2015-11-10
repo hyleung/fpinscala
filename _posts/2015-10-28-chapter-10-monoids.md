@@ -2,7 +2,7 @@
 layout: post
 title:  "Chapter 10: Monoids"
 date:   2015-10-28 20:32:40 -0700
-categories: fpinscala chapter_notes 
+categories: fpinscala chapter_notes
 ---
 
 A `Monoid` is an [algebraic structure](https://en.wikipedia.org/wiki/Algebraic_structure).
@@ -21,7 +21,7 @@ A Monoid consists of:
 Such that:
 
 - `op` is *associative* => `op(a,op(b,c)) == op(op(a,b),c)`
-- `zero` is an *identity* => `op(x,zero) == op(zero,x) == x` 
+- `zero` is an *identity* => `op(x,zero) == op(zero,x) == x`
 
 "The type `A` _forms_ a _monoid_ under the operations defined by the `Monoid[A]` instance"
 
@@ -117,10 +117,71 @@ Two monoids are *isomorphic* if there exists:
 such that:
 
     f andThen g
- 
+
 and
 
     g andThen f
 
 ...are identity functions
 
+Foldable Data structures
+
+Sometimes we want to process the data contained in a data structure (e.g. a tree, list, etc.) and we don't particularly care about the shape or characteristics of the data structure.
+
+E.g. we have a structure full of integers, and we want to compute the sum.
+
+    ints.foldRight(0)(_ + _)
+
+We don't really care whether the data structure is a `List` or `Stream` or whatever.
+
+We can capture this (and other useful functions) by defining a `Foldable` trait in Scala.
+
+```
+trait Foldable[F[_]] {
+  def foldRight[A,B](as: F[A])(z:B)(f: (a,b) => B):B
+  def foldLeft[A,B](as: F[A])(z:B)(f: (b,a) => B):B
+  def foldMap[A,B](as: F[A])(f: A => B)(mb: Monoid[B]):B
+  def contatenate[A](as: F[A])(m: Monoid[A]):A =
+    foldLeft(as)(m.zero)(m.op)
+}
+```
+
+`F[_]` above is a *type constructor* (in this case, one that takes a single argument). `Foldable` is a *higher kinded type*.
+
+Some examples  of `Foldable[F[_]]`: `Foldable[List]`, `Foldable[IndexedSeq]`, `Foldable[Stream]`, `Foldable[Tree]`.
+
+Composing Monoids
+
+Monoids can *compose*, which allows us to build out more complicated functions using more simple functions.
+
+E.g. Product Monoid
+
+    def productMonoid[A,B](ma: Monoid[A])(mb: Monoid[B]):Monoid[(A,B)]
+
+E.g. Map-merge
+
+```
+def mapMergeMonoid[K,V](mv: Monoid[V]):Monoid[Map[K,V]] =
+  new Monoid[Map[K,V]] {
+    def zero = Map[K,V]() //an empty Map
+    def op(a: Map[K,V], b: Map[K,V]):Map[K,V] =
+      ()(a.keySet) ++ (b.keySet)).foldLeft(zero){ (acc, k) =>
+        acc.updated(k, V.op(a.getOrElse(k, V.zero),
+                            b.getOrElse(k, V.zero)))
+      }
+  }
+```
+
+Fused traversals using Monoids
+
+Monoids can be used to perform multiple computations over a single traversal.
+
+E.g. keep a running sum of a list of integers and track the number of elements at the same time
+
+```
+val m = productMonoid(intAddition, intAddition)
+
+val p = listFoldable.foldMap(List(1,2,3,4))(a => (1,a))(m)
+
+//p: (Int, Int) = (4,10)
+```
