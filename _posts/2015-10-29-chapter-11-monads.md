@@ -114,4 +114,60 @@ Based on the minimal set of primitive combinators, we can define a number of use
     def filterM[A](ms: List[A])(f: A => M[Boolean]):M[List[A]]
 
 …plus `map`, `join`, `compose`, etc. (depending on which set of primitives we chose).
-    
+
+### Monad Examples
+
+#### Identity Monad
+
+```
+case class Id[A](value: A) {
+  def map[B](f: A => B): Id[B] = Id(f(value))
+  def flatMap[B](f: A => Id[B]): Id[B] = f(value)
+}
+```    
+
+#### State Monad and Partial type application
+
+Recall our `State` data type from chapter 6:
+
+```
+case class State[S,+A](run: S => (A, S)) {
+  ...
+}
+```
+
+We'd like implement a Monad instance for this type, but the type constructor takes *two* arguments.
+
+So...we can define a type with one of the arguments fixed. For example, where `S` is `Int`:
+
+```
+type IntState[A] = State[Int,A]
+```
+
+Then we can define our `IntState` Monad as follows:
+
+```
+object IntStateMonad extends Monad[IntState] {
+  ...
+}
+```
+
+Another way to accomplish this is to use an anonymous type:
+
+```
+object IntStateMonad extends Monad[({type IntState[A] = State[Int,A]})#IntState] {
+  ...
+}
+```
+
+When the type constructor is declared inline like this, it is sometimes referred to as a *type lambda* in Scala.
+
+We can use this approach to *partially apply* the type constructor as follows:
+
+```
+def stateMonad[S] = new Monad[({type f[x] = State[S,x]})#f] {
+  def unit[A](a: => A):State[S,A] = State(s => (a,s))
+  def flatMap[A,B](state: State[S,A])(fa: A => State[S,B]):State[S,B] =
+    state flatMap fa
+}
+```
