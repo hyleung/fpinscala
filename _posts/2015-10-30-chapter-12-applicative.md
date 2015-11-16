@@ -138,4 +138,29 @@ Then:
 
 `f` and `g` are the transformations.
 
-**[Note: In the book, a function `def productF[I, O, I2, O2](f: I => O, g: I2 => 02):(I,I2) => (O,O2)]` is used.**    
+**[Note: In the book, a function `def productF[I, O, I2, O2](f: I => O, g: I2 => 02):(I,I2) => (O,O2)]` is used.**
+
+## Traversable Functors
+
+Recall the following functions:
+
+    def traverse[F[_],A,B](as:List[A])(f: A => B):F[List[B]]
+
+    def sequence[F[_],A](as:List[F[A]):F[List[A]]    
+
+…what if, instead of `List`, we had some other type.
+
+…`Map`, for example:
+
+    def sequence[K,V](m:Map[K,F[V]]):F[Map[K,V]]
+
+```
+trait Traverse[F[_]] {
+  def traverse[G[_]:Applicative,A,B](fa:F[A])(f:A => G[B]):G[F[B]] =
+    sequence(map(fa)(f))
+  def sequence[G[_]:Applicative,A](fga:F[G[A]]):G[F[A]] =
+    traverse(fga)(ga => ga)
+}
+```
+
+We can come up with `Traverse` instances for types like `List`, `Option`, `Tree` (override either `traverse`).   
