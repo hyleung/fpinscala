@@ -1,5 +1,7 @@
 package fpinscala.iomonad
 
+import fpinscala.iomonad
+
 object IO0 {
                             /*
 
@@ -306,7 +308,14 @@ object IO3 {
                                f: A => Free[F, B]) extends Free[F, B]
 
   // Exercise 1: Implement the free monad
-  def freeMonad[F[_]]: Monad[({type f[a] = Free[F,a]})#f] = ???
+  def freeMonad[F[_]]: Monad[({type f[a] = Free[F,a]})#f] =
+    new Monad[({type f[a] = iomonad.Free[F, a]})#f] {
+      def flatMap[A, B](fa: iomonad.Free[F, A])(f: (A) => iomonad.Free[F, B]): iomonad.Free[F, B] =
+        fa.flatMap(f)
+
+      def unit[A](a: => A): iomonad.Free[F, A] =
+        Return(a)
+  }
 
   // Exercise 2: Implement a specialized `Function0` interpreter.
   // @annotation.tailrec
