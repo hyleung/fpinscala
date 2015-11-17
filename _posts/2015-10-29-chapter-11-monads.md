@@ -11,11 +11,11 @@ categories: fpinscala chapter_notes
 
 Represented as a Scala trait:
 
-```
+{% highlight scala %}
 trait Functor[F[_]] {
   def map[A,B](as:F[A])(f:a => b):F[B]
 }
-```
+{% endhighlight %}
 
 Again, this a a higher-kinded type, where `F[_]` could be a `List`, `Option`, etc.
 
@@ -23,10 +23,10 @@ What can we do with this Functor?
 
 ...implement a generic "unzip" function:
 
-```
-def distribute[A,B](fab:F[(A,B)]):(F[A],F[B]) =
-  (map(fab)(_._1), map(fab)(_._2))
-```
+
+    def distribute[A,B](fab:F[(A,B)]):(F[A],F[B]) =
+      (map(fab)(_._1), map(fab)(_._2))
+
 
 ### Functor laws
 
@@ -62,12 +62,12 @@ Instances of `Monad` will need to provide implementations for one of these minim
 
 Expressed as a Scala trait (recall that `map` is defined on `Functor`):
 
-```
+{% highlight scala %}
 trait Monad[M[_]] extends Functor[M] {
   def unit[A](a => A):M[A]
   def flatMap[A,B](ma: M[A])(f: A => M[B]):M[B]
 }
-```
+{% endhighlight %}
 
 ### Monad laws
 
@@ -119,55 +119,53 @@ Based on the minimal set of primitive combinators, we can define a number of use
 
 #### Identity Monad
 
-```
+{% highlight scala %}
 case class Id[A](value: A) {
   def map[B](f: A => B): Id[B] = Id(f(value))
   def flatMap[B](f: A => Id[B]): Id[B] = f(value)
 }
-```    
+{% endhighlight %}
 
 #### State Monad and Partial type application
 
 Recall our `State` data type from chapter 6:
 
-```
+{% highlight scala %}
 case class State[S,+A](run: S => (A, S)) {
   ...
 }
-```
+{% endhighlight %}
 
 We'd like implement a Monad instance for this type, but the type constructor takes *two* arguments.
 
 So...we can define a type with one of the arguments fixed. For example, where `S` is `Int`:
 
-```
-type IntState[A] = State[Int,A]
-```
+    type IntState[A] = State[Int,A]
 
 Then we can define our `IntState` Monad as follows:
 
-```
+{% highlight scala %}
 object IntStateMonad extends Monad[IntState] {
   ...
 }
-```
+{% endhighlight %}
 
 Another way to accomplish this is to use an anonymous type:
 
-```
+{% highlight scala %}
 object IntStateMonad extends Monad[({type IntState[A] = State[Int,A]})#IntState] {
   ...
 }
-```
+{% endhighlight %}
 
 When the type constructor is declared inline like this, it is sometimes referred to as a *type lambda* in Scala.
 
 We can use this approach to *partially apply* the type constructor as follows:
 
-```
+{% highlight scala %}
 def stateMonad[S] = new Monad[({type f[x] = State[S,x]})#f] {
   def unit[A](a: => A):State[S,A] = State(s => (a,s))
   def flatMap[A,B](state: State[S,A])(fa: A => State[S,B]):State[S,B] =
     state flatMap fa
 }
-```
+{% endhighlight %}

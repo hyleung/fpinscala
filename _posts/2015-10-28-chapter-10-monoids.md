@@ -136,7 +136,7 @@ We don't really care whether the data structure is a `List` or `Stream` or whate
 
 We can capture this (and other useful functions) by defining a `Foldable` trait in Scala.
 
-```
+{% highlight scala %}
 trait Foldable[F[_]] {
   def foldRight[A,B](as: F[A])(z:B)(f: (a,b) => B):B
   def foldLeft[A,B](as: F[A])(z:B)(f: (b,a) => B):B
@@ -144,7 +144,7 @@ trait Foldable[F[_]] {
   def contatenate[A](as: F[A])(m: Monoid[A]):A =
     foldLeft(as)(m.zero)(m.op)
 }
-```
+{% endhighlight %}
 
 `F[_]` above is a *type constructor* (in this case, one that takes a single argument). `Foldable` is a *higher kinded type*.
 
@@ -160,7 +160,7 @@ E.g. Product Monoid
 
 E.g. Map-merge
 
-```
+{% highlight scala %}
 def mapMergeMonoid[K,V](mv: Monoid[V]):Monoid[Map[K,V]] =
   new Monoid[Map[K,V]] {
     def zero = Map[K,V]() //an empty Map
@@ -170,7 +170,7 @@ def mapMergeMonoid[K,V](mv: Monoid[V]):Monoid[Map[K,V]] =
                             b.getOrElse(k, V.zero)))
       }
   }
-```
+{% endhighlight %}
 
 Fused traversals using Monoids
 
@@ -178,10 +178,10 @@ Monoids can be used to perform multiple computations over a single traversal.
 
 E.g. keep a running sum of a list of integers and track the number of elements at the same time
 
-```
+{% highlight scala %}
 val m = productMonoid(intAddition, intAddition)
 
 val p = listFoldable.foldMap(List(1,2,3,4))(a => (1,a))(m)
 
 //p: (Int, Int) = (4,10)
-```
+{% endhighlight %}

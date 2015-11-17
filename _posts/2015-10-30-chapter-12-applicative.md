@@ -8,13 +8,13 @@ categories: fpinscala chapter_notes
 
 Consider `sequence` and `traverse`:
 
-```
+{% highlight scala %}
 def sequence[A](lfa: List[F[A]]):F[List[A]] =
   traverse(lfa)(fa => fa)
 
 def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] =
     as.foldRight(unit(List[B]()))((a,acc) => map2(f(a),acc)(_ :: :))
-```
+{% endhighlight %}
 
 For a Monad based on `flatMap` and `unit`, `map2` would be implemented in terms of `flatMap`. Notice, however, that `traverse` doesn't call `flatMap` directly. If we had an implementation of `map2` and `unit`, we'd be able to use implement `traverse` (and, therefore, `sequence`) **without** `flatMap`.
 
@@ -22,7 +22,7 @@ If we let `unit` and `map2` be the primitives, we get a new abstraction, the **A
 
 ### Expressed as a Scala trait
 
-```
+{% highlight scala %}
 trait Applicative[F[_]] extends Functor[F] {
   //primitives
   def map2[A,B,C](fa:F[A], fb:F[B])(f: (A,B) => C):F[C]
@@ -31,24 +31,24 @@ trait Applicative[F[_]] extends Functor[F] {
   def map[A,B](fa:F[A])(f: A => B):F[B] =
     map2(fa,unit(()))((a,_) => f(a))
   def traverse[A,B](as: List[A])(unit(List[B]()))((a,acc) => map2(f(a),acc)(_ :: _))
-  …  
+  ...
 }
-```
+{% endhighlight %}
 **all applicatives are functors** (since we can derive `map` via `map2` and `unit`).
 
 We can provide implementations of `sequence`, `replicateM`, `product`, etc. using only `unit` and `map2`.
 
-```
+{% highlight scala %}
 def sequence[A](fas:List[F[A]):F[List[A]]
 def replicateM[A](n:Int,fa:F[A]):F[List[A]]
 def product[A,B](fa:F[A], fb:F[B]):F[(A,B)]
-```
+{% endhighlight %}
 
 ### Applicative in terms of `unit` and `apply`
 
 The name *applicative* comes from the fact that we can implement `Applicative` via an alternate set of primitives:
 
-```
+{% highlight scala %}
 trait Applicative[F[_]] extends Functor[F] {
   //primitives
   def apply[A,B](fab: F[A => B])(fa:F[A]):F[B]
@@ -59,13 +59,13 @@ trait Applicative[F[_]] extends Functor[F] {
   def map2[A,B,C](fa:F[A],fb:F[B])(f:(A,B) => C):F[C] =
     apply[B,C](map(fa)(f.curried))(fb)
 }
-```
+{% endhighlight %}
 
 ### `Monad[F]` as a subtype of `Applicative[F]`
 
 If we implement `map2` using `flatMap`, we can make `Monad` a subtype of `Applicative`. I.e. *all monads are applicative functors*.
 
-```
+{% highlight scala %}
 trait Monad[F[_]] extends Applicative[F] {
   def flatMap[A,B](fa:F[A])(f:A => F[B]):F[B] =
     join(map(fa)(f))
@@ -82,7 +82,7 @@ trait Monad[F[_]] extends Applicative[F] {
   def map2[A,B,C](fa:F[A], fb:F[B])(f: (A,B) => C):F[C] =
     flatMap(fa)(a => map(fb)(b => f(a,b)))
 }
-```
+{% endhighlight %}
 
 A minimal Monad implementation will need to implement `unit` and override either `flatMap` or `join` and `map`. We get `Applicative` "for free".
 
@@ -154,13 +154,21 @@ Recall the following functions:
 
     def sequence[K,V](m:Map[K,F[V]]):F[Map[K,V]]
 
-```
+{% highlight scala %}
 trait Traverse[F[_]] {
   def traverse[G[_]:Applicative,A,B](fa:F[A])(f:A => G[B]):G[F[B]] =
     sequence(map(fa)(f))
   def sequence[G[_]:Applicative,A](fga:F[G[A]]):G[F[A]] =
     traverse(fga)(ga => ga)
 }
-```
+{% endhighlight %}
 
 We can come up with `Traverse` instances for types like `List`, `Option`, `Tree` (override either `traverse`).   
+
+To make `Traverse` an extension of `Functor`, we need to have some `Applicative` instance available.
+
+{% highlight scala %}
+trait Traverse[F[_]] extends Functor[F[_]] {
+
+}
+{% endhighlight %}
