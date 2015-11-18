@@ -30,7 +30,7 @@ trait Applicative[F[_]] extends Functor[F] { self =>
   //Is this 'product'?
   def factor[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
     map2(fa,fb)((_,_))
-  
+
   def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = new Applicative[({type f[x] = (F[x], G[x])})#f] {
     override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a),G.unit(a))
     override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
