@@ -49,6 +49,39 @@ def computeMessage(p:Option[Player]):String = p map {
   case Player(name,_) => s"$name is the winner!"
 } getOrElse "It's a draw!"
 
-def contest(p1: Player, p2: Player):Unit =>
+def contest(p1: Player, p2: Player):Unit =
   println(computeMessage(winner(p1, p2)))
 {% endhighlight %}
+
+We can take this a step further and create a type to represent the IO:
+
+{% highlight scala %}
+trait IO { def run:Unit }
+
+def printLine(msg:String):IO = new IO{ def run = println(msg) }
+
+def contest(p1: Player, p2: Player):IO =
+  printLine(computeMessage(winner(p1, p2)))
+{% endhighlight %}
+
+Given an *impure* function, `f: A => B`, we can factor this as function, `A => D`, where `D` is some *description* of the result of `f` (`computeMessage`) and `D => B`, an *interpreter* of this result.
+
+We can flesh out this `IO` trait by adding some operations:
+
+{% highlight scala %}
+trait IO { self =>
+  def run:Unit
+  def ++(io:IO):IO = new IO {
+    def run = {
+      self.run
+      io.run
+    }
+  }
+}
+
+object IO {
+  def empty:IO = new IO { def run = () }
+}
+{%endhighlight%}
+
+i.e. we have formed a `Monoid` for our `IO` type.
