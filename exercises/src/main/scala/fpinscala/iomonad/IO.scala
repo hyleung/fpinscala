@@ -48,7 +48,11 @@ object IO0 {
   */
 }
 
+
 object IO1 {
+
+  def main(args: Array[String]): Unit =
+    factorialREPL.run
                             /*
 
   We need a way for our `IO` actions to yield a result of some
@@ -324,7 +328,7 @@ object IO3 {
     case Suspend(s) => s()
     case FlatMap(s,f) => s match {
       case Return(y) => runTrampoline(f(y))
-      //apply 'f' to the suspended value t  
+      //apply 'f' to the suspended value t
       case Suspend(t) => runTrampoline(f(t()))
       // first "unpack" t using flatMap, apply 'g' to the value and "unpack" that
       // applying 'f' to the value
