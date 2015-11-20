@@ -109,3 +109,55 @@ But...(with the simple implementation above):
 
 - both the `map` and `flatMap` implementations aren't tail recursive, so it isn't stack safe
 - the `IO[A]` type is opaque. We have no way of knowing what the program will do. We can `map` and `flatMap`, etc. and `run`.
+
+### Addressing the tail recursion issue
+
+We can address the tail recursion issue by *reifying* the control flow into our type.
+
+{% highlight scala %}
+sealed trait IO[A] {
+  def flatMap[B](f:A => IO[B]):IO[B] =
+    FlatMap(this, f)
+  def map[B](f:A => B):IO[B] =
+    flatMap(f andThen (Return(_)))
+}
+//Just return a value
+case class Return[A](a:A) extends IO[A]
+//Suspend a computation, return a result when resumed
+case class Suspend[A](resume:() => A) extends IO[A]
+//Process the sub-computation, then continue with k once "sub" produces a result
+case class FlatMap[A,B](sub:IO[A], k: A => IO[B]) extends IO[B]
+
+{% endhighlight %}
+
+The `FlatMap` data constructor lets us extend or continue an existing computation.
+
+The interpreter (runner) implementation for this type:
+
+{%highlight scala%}
+
+@annotation.tailrec def run[A](io: IO[A]): A = io match {
+  case Return(a) => a
+  case Suspend(r) => r()
+  case FlatMap(x, f) => x match {
+    case Return(a) => run(f(a))
+    case Suspend(r) => run(f(r()))
+    case FlatMap(y, g) => run(y flatMap (a => g(a) flatMap f))
+  }
+}
+{% endhighlight %}
+...which *is* tail recursive.
+
+What's going on in the FlatMap case?
+
+We actually have:
+
+`FlatMap(FlatMap(y,g),f)`
+
+The next time we hit `run`, we actually want to check if `y` is another `FlatMap` - so we use the associativity law for monads to "swap" things around:
+
+`FlatMap(FlatMap(y,g),f)` is actually equivalent to `(y flatMap g) flatMap f`. Using associativity, we know that this is equivalent to: `y flatMap (a => g(a) flatMap f)`.
+
+The `run` function is called a *trampoline*
+
+## Trampolining
