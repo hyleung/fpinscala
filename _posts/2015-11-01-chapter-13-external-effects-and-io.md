@@ -85,3 +85,27 @@ object IO {
 {%endhighlight%}
 
 i.e. we have formed a `Monoid` for our `IO` type.
+
+## Input effects
+
+The preceding IO trait, doesn't allow our effects to return any value. Let's fix that:
+
+{% highlight scala %}
+trait IO[A] { self =>
+  def run:A
+  def map[B](f:A => B):IO[B] =
+    new IO[B] { def run = f(self.run)}
+  def flatMap[B](f:A => IO[B]):IO[B] =
+    new IO[B] { def run = f(self.run).run }
+}
+{% endhighlight %}
+
+What do we get by introducing this IO type?
+
+- IO computations are just *values*. We can keep lists of them, create new ones, re-use them, etc.
+- we can come up with more interesting interpreters for IO computations
+
+But...(with the simple implementation above):
+
+- both the `map` and `flatMap` implementations aren't tail recursive, so it isn't stack safe
+- the `IO[A]` type is opaque. We have no way of knowing what the program will do. We can `map` and `flatMap`, etc. and `run`.
