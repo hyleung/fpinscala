@@ -161,3 +161,91 @@ The next time we hit `run`, we actually want to check if `y` is another `FlatMap
 The `run` function is called a *trampoline*
 
 ## Trampolining
+
+In the `IO` trait above, there wasn't really any IO going on - it was just a monad that we used for tail-call elimination. So we can rename it:
+
+{% highlight scala %}
+sealed trait TailRec[A] {
+  def flatMap[B](f:A => TailRec[B]):TailRec[B] =
+    FlatMap(this, f)
+  def map[B](f:A => B):TailRec[B] =
+    flatMap(f andThen (Return(_)))
+}
+
+//Just return a value
+case class Return[A](a:A) extends TailRec[A]
+//Suspend a computation, return a result when resumed
+case class Suspend[A](resume:() => A) extends TailRec[A]
+//Process the sub-computation, then continue with k once "sub" produces a result
+case class FlatMap[A,B](sub:TailRec[A], k: A => TailRec[B]) extends TailRec[B]
+{% endhighlight %}
+
+Here's an example where we'd get a `StackOverflowError`:
+
+{%highlight console %}
+val f = (x:Int) => x
+f: Int => Int = <function1>
+
+val g = List.fill(100000)(f).foldLeft(f)(_ compose _)
+g: Int => Int = <function1>
+
+g(42)
+java.lang.StackOverflowError
+{%endhighlight%}
+
+`g` is taking 100000 `f` and composing them together, but when we try to execute `g` we get a `StackOverflowError`.
+
+We can fix this by using `TailRec` to compose the functions:
+
+{%highlight console %}
+val f:Int => TailRec[Int] = (x:Int) => Return(x)
+f: Int => TailRec[Int] = <function1>
+
+val g = List.fill(100000)(f).foldLeft(f){
+  | (a,b) => x => Suspend(() => a(x).flatMap(b))
+  | }
+g: Int => TailRec[Int] = <function1>
+
+val x = run(g(42))
+x: Int = 42
+{%endhighlight%}
+
+Note how we started off with trying to compose `A => B`, but ended up using `A => M[B]`. That's a *Kleisli function* - we're using *Kleisli composition* instead of regular function composition.
+
+## Defining an Async type using Par
+
+We can use the `Par` type that was developed in Chapter 7 to implement something that can support asynchronous execution:
+
+{% highlight scala %}
+sealed trait Async[A] {
+  def flatMap[B](f: A => Async[B]):Async[B] =
+    FlatMap(this,f)
+  def map[B](f: A => B):Async[B] =
+    flatMap(f andThen (Return(_))
+}
+
+case class Return[A](a:A) extends Async[A]
+case class Suspend[A](resume:Par[A]) extends Async[A]
+case class FlatMap[A,B](sub:Async[A], k:A => Async[B]):Async[B]
+{% endhighlight %}
+
+We use a tail-recursive `step` function to help us implement the `run`:
+
+{% highlight scala %}
+@annotation.tailrec
+def step[A](async:Async[A]):Async[A] = async match {
+  //this is the same right associativity trick from above
+  case FlatMap(FlatMap(x,f),g) => step(x flatMap (a => f(a) flatMap g))  
+  case FlatMap(Return(x),f) => step(f(x))
+  case _ => async
+}
+
+def run[A](async:Async[A]):Par[A] = step(async) match {
+  case Return(a) => Par.unit(a)
+  case Suspend(s) => Par.flatMap(s)(a => run(a))
+  case FlatMap(x,f) => x match {
+    case Suspend(r) => Par.flatMap(r)(a => run(f(a))
+    case _ => sys.error("Ruh-roh!") //shouldn't happen
+  }
+}
+{% endhighlight %}
