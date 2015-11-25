@@ -249,3 +249,27 @@ def run[A](async:Async[A]):Par[A] = step(async) match {
   }
 }
 {% endhighlight %}
+
+We can take this a step further by abstracting out the `Async` or `TailRec` part and parameterizing on some type constructor `F`, like we did in the preceding chapters:
+
+{% highlight scala %}
+sealed trait Free[F[_],A]
+case class Return[F[_],A](a:A) extends Free[F,A]
+case class Suspend[F[_],A](s:F[A]) extends Free[F,A]
+case class FlatMap[F[_],A,B](s:Free[F,A],f: A => Free[F,B]) extends Free[F,B]
+{% endhighlight %}
+
+`TailRec` and `Async` are then type aliases:
+
+{% highlight scala %}
+type TailRec[A] = Free[Function0,A]
+type Async[A] = Free[Par,A]
+{% endhighlight %}
+
+`Free[F,A]` is a *recursive* structure containing some `A` wrapped in layers of `F`. Can be thought of as a way to construct an *abstract syntax tree*, describing a program and how it branches, etc.
+
+**More on free monads**
+
+- [Many Roads to Free Monads](https://www.fpcomplete.com/user/dolio/many-roads-to-free-monads)
+- [Why Free Monads Matter](http://www.haskellforall.com/2012/06/you-could-have-invented-free-monads.html)
+- [Learning Scalaz - Free Monad](http://eed3si9n.com/learning-scalaz/Free+Monad.html)
