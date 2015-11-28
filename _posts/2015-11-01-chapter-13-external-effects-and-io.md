@@ -273,3 +273,26 @@ type Async[A] = Free[Par,A]
 - [Many Roads to Free Monads](https://www.fpcomplete.com/user/dolio/many-roads-to-free-monads)
 - [Why Free Monads Matter](http://www.haskellforall.com/2012/06/you-could-have-invented-free-monads.html)
 - [Learning Scalaz - Free Monad](http://eed3si9n.com/learning-scalaz/Free+Monad.html)
+
+## Console I/O
+
+{% highlight scala %}
+sealed trait Console[A] {
+  def toPar:Par[A]
+  def toThunk:() => A
+}
+
+case object Readline extends Console[Option[String]] {
+  def toPar = Par.lazyUnit(run)
+  def toThunk = () => run
+
+  def run:Option[String] =
+    try Some(readLine())
+    catch { case e:Exception => None}
+}
+
+case class PrintLine(line:String) extends Console[Unit] {
+  def toPar = Par.lazyUnit(println(line))
+  def toThunk = () => println(line)
+}
+{% endhighlight %}
