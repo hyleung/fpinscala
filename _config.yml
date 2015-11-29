@@ -18,3 +18,5 @@ github_username: hyleung
 
 # Build settings
 markdown: kramdown
+
+highlighter: rouge
