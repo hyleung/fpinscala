@@ -296,3 +296,78 @@ case class PrintLine(line:String) extends Console[Unit] {
   def toThunk = () => println(line)
 }
 {% endhighlight %}
+
+The signature for `run`:
+
+{% highlight scala%}
+def run[F[_],A](a:Free[F,A])(implicit F:Monad[F]):F[A]
+{%endhighlight%}
+
+But we can't implement `flatMap` for `Console`:
+
+{%highlight scala%}
+sealed trait Console[A] {
+  def flatMap[B](f:A => Console[B]):Console[B] = this match {
+    case ReadLine => ???
+    case PrintLine(s) => ???
+  }
+}
+{%endhighlight%}
+
+So we need to *translate* `Console` into some other type that can form a Monad.
+
+{%highlight scala%}
+trait Translate[F[_],G[_]] {
+  def apply(f:F[A]):G[A]
+}
+//infix operator?
+type ~>[F[_],G[_]] = Translate[F,G]
+{%endhighlight%}
+
+Both `Function0` and `Par` can form Monads so we'll implement translations from `Console` to these:
+
+{%highlight scala%}
+val consoleToFunction0 =
+  new (Console ~> Function0) { def apply[A](a:Console[A]) = a.toThunk }
+
+val consoleToPar =
+  new (Console ~> Par) { def apply[A](a:Console[A]) = a.toPar }
+{%endhighlight%}
+
+We can generalize `runFree` so that it does the translation as we interpret the program:
+
+{%highlight scala%}
+def runFree[F[_],G[_]](free:Free[F,A])(translation:F ~> G)(implicit G:Monad[G]):G[A] =
+  step(free) match {
+    case Return(a) => G.unit(a)
+    case Suspend(r) => t(r)
+    case FlatMap(Suspend(r),f) => G.flatMap(t(r))(a => runFree(f(a))(t))
+    case _ => sys.error("Ruh-roh, step should eliminate this case")
+  }
+{%endhighlight%}
+
+We can run the `Console` program as either `Function0` or `Par`:
+
+{%highlight scala%}
+def runFreeConsoleFunction0[A](a:Free[Console,A]): () => A =
+    runFree[Console,Function0,A](a)(consoleToFunction0)
+
+def runFreeConsolePar[A](a:Free[Console,A]):Par[A] =
+    runFree[Console,Par,A](a)(consoleToPar)
+{%endhighlight%}
+
+...given that we have the necessary bits to form the `Function0` and `Par` monads:
+
+{%highlight scala%}
+implicit val function0Monad = new Monad[Function0] {
+  def unit[A](a: => A) = () => A
+  def flatMap[A,B](a:Function0[A])(f: A => Function0[B]) =
+    () => f(a())()
+}
+
+implicit val parMonad = new Monad[Par] {
+  def unit[A](a: => A) = Par.unit(a)
+  def flatMap[A,B](a:Par[A])(f: a => Par[B]) =
+    Par.fork { Par.flatMap(a)(f) }
+}    
+{%endhighlight%}
