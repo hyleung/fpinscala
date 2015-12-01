@@ -403,6 +403,7 @@ object IO3 {
 
     def printLn(line: String): ConsoleIO[Unit] =
       Suspend(PrintLine(line))
+
   }
 
   /*
@@ -448,6 +449,7 @@ object IO3 {
     runFree[Console,Function0,A](a)(consoleToFunction0)
   def runConsolePar[A](a: Free[Console,A]): Par[A] =
     runFree[Console,Par,A](a)(consoleToPar)
+
 
   /*
   The `runConsoleFunction0` implementation is unfortunately not stack safe,
