@@ -439,7 +439,8 @@ object IO3 {
       case FlatMap(Suspend(r), f) => G.flatMap(t(r))(a => runFree(f(a))(t))
       case _ => sys.error("Impossible, since `step` eliminates these cases")
     }
-
+  
+  
   val consoleToFunction0 =
     new (Console ~> Function0) { def apply[A](a: Console[A]) = a.toThunk }
   val consoleToPar =
