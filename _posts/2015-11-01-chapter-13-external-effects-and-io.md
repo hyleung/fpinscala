@@ -340,8 +340,9 @@ We can generalize `runFree` so that it does the translation as we interpret the 
 def runFree[F[_],G[_]](free:Free[F,A])(translation:F ~> G)(implicit G:Monad[G]):G[A] =
   step(free) match {
     case Return(a) => G.unit(a)
-    case Suspend(r) => t(r)
-    case FlatMap(Suspend(r),f) => G.flatMap(t(r))(a => runFree(f(a))(t))
+    case Suspend(r) => translation(r)
+    case FlatMap(Suspend(r),f) => 
+        G.flatMap(translation(r))(a => runFree(f(a))(translation))
     case _ => sys.error("Ruh-roh, step should eliminate this case")
   }
 {%endhighlight%}
@@ -371,3 +372,27 @@ implicit val parMonad = new Monad[Par] {
     Par.fork { Par.flatMap(a)(f) }
 }    
 {%endhighlight%}
+
+**You can get the same result w/o the use of the `~>` type alias**
+
+{%highlight scala%}
+val consoleToFunction =
+    new Translate[Console,Function0] { def apply[A](a:Console[A]) = a.toThunk }
+
+val consoleToPar = 
+    new Translate[Console,Par] { def apply[A](a:Console[A]) = a.toPar }
+
+def runFree[F[_],G[_]](free:Free[F,A])(t:Translate[F,G])(implicit G:Monad[G]):G[A] =
+    step(free) match {
+        case Return(a) => G.unit(a)
+        case Suspend(r) => t(r)
+        case FlatMap(Suspend(r),f) => G.flatMap(t(r))(a => runFree(f(a))(t))
+        case _ => sys.error("Ruh-roh!")
+
+{% endhighlight%}
+
+## Stack-safe implementation
+
+...but...notice that our `runFree` implementation from above isn't stack-safe (the recursive `runFree` call isn't in the tail position.
+
+
