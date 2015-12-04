@@ -320,7 +320,7 @@ So we need to *translate* `Console` into some other type that can form a Monad.
 trait Translate[F[_],G[_]] {
   def apply(f:F[A]):G[A]
 }
-//infix operator?
+//fancy type alias
 type ~>[F[_],G[_]] = Translate[F,G]
 {%endhighlight%}
 
@@ -395,4 +395,53 @@ def runFree[F[_],G[_]](free:Free[F,A])(t:Translate[F,G])(implicit G:Monad[G]):G[
 
 ...but...notice that our `runFree` implementation from above isn't stack-safe (the recursive `runFree` call isn't in the tail position.
 
+Here is the stack-safe implementation:
 
+{%highlight scala%}
+def translate[F[_],G[_],A](f: Free[F,A])(fg: F ~> G): Free[G,A] = {
+    type FreeG[A] = Free[G,A]
+    val t = new (F ~> FreeG) {
+        override def apply[A](fa: F[A]) = Suspend{fg(fa)}
+    }
+    runFree(f)(t)(freeMonad[G])
+}
+
+def runConsole[A](a: Free[Console,A]): A =
+    runTrampoline{ translate(a)(new (Console ~> Function0) {
+        override def apply[A](c: Console[A]) = c.toThunk
+    })
+}
+{%endhighlight%}
+
+*Now, how the fuck does this work?*
+
+So, `runTrampoline` takes a `Free[Function0,A]` and produces a value `A` - and it does this in a stack-safe way. We need
+to "get to" a `Free[Function0,A]` in order to be able to utilize this. In our case, `F` is `Console` and `G` is
+`Function0`. We start with a `Free[Console,A]`, provide a `Translate` that goes from `Console` to `Function0` (just does
+a `toThunk`).
+
+What does `translate` do?
+
+We define a type alias to "fix" one of the type params - a "G flavoured `Free`". We provide a `Translate` from `F` to
+`FreeG[A]` and use `runFree` to return the `G[A]`. Compare the `Translate` definition here vs. the one previously used.
+
+
+Compare:
+
+{%highlight scala%}
+val consoleToFunction0 = new (Console ~> Function0) {
+    def apply[A](a:Console[A]) = a.toThunk 
+}
+{%endhighlight%}
+
+...vs:
+
+{%highlight scala%}
+val t = new (F ~> FreeG) {
+    def apply[A](fa:F[A]) = Suspend(fg(fa))
+}
+{%endhighlight%}
+
+Instead of returning recursive *computation* (`toThunks`, nested inside of `toThunks`), we are returning a recusive data
+structure (`Free`, nested inside of `Free`) - which we don't evaluate until we execute `runConsole`. We know we can
+evaluate that data structure in a stack-safe manner using `trampoline`.
