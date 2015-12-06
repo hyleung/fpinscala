@@ -123,11 +123,36 @@ object STArray {
 }
 
 object Immutable {
+  //Action that does nothing
   def noop[S] = ST[S,Unit](())
+  /**
+   * "Reorder the array so that all elements with values less than the pivot 
+   * come before the pivot, while all elements with values greater than the 
+   * pivot come after it (equal values can go either way). After this partitioning, 
+   * the pivot is in its final position. This is called the partition operation."
+   */
+  def partition[S](a: STArray[S,Int], l: Int, r: Int, pivot: Int): ST[S,Int] = for {
+    pivotVal <- a.read(pivot) 
+    _ <- a.swap(pivot,r)
+    j <- STRef(l) //var j = l
+    _ <- (l until r).foldLeft(noop[S])((s,i) => for { //(i <- l until r)
+      _ <- s
+      vi <- a.read(i) //read the comparison value at index i
+      _ <- if (vi < pivotVal) (for {
+       vj <- j.read //read the j value from STRef
+       _ <- a.swap(i, vj) //swap(i,j)
+       _ <- j.write(vj + 1) //j += 1
+      } yield ()) else noop[S]
+    } yield ())
+    x <- j.read //read j
+    _ <- a.swap(x,r) //swap(j,r) 
+  } yield x //return j
 
-  def partition[S](a: STArray[S,Int], l: Int, r: Int, pivot: Int): ST[S,Int] = ???
-
-  def qs[S](a: STArray[S,Int], l: Int, r: Int): ST[S, Unit] = ???
+  def qs[S](a: STArray[S,Int], l: Int, r: Int): ST[S, Unit] = if (l < r) for {
+    p <- partition(a, l, r, l + (r - l)/2)
+    _ <- qs(a, l, p - 1)
+    _ <- qs(a, p + 1, r)
+  } yield () else noop[S]
 
   def quicksort(xs: List[Int]): List[Int] =
     if (xs.isEmpty) xs else ST.runST(new RunnableST[List[Int]] {
@@ -141,4 +166,3 @@ object Immutable {
 }
 
 import scala.collection.mutable.HashMap
-
