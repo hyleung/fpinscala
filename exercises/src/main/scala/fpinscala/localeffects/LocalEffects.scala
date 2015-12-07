@@ -165,4 +165,15 @@ object Immutable {
   })
 }
 
+
 import scala.collection.mutable.HashMap
+
+sealed abstract class STMap[S,K,B] {
+  protected def value:HashMap[K,V]
+  def write(key:K, value:V):ST[S,Unit] = ???
+  def read(s:S, key:K):St[S,V] = ???
+}
+
+object STMap {
+  def apply[S,K,V](k:K, v:V):ST[S,STMap[S,K,V]] = ???
+}
