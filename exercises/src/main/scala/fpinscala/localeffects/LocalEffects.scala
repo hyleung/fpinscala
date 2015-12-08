@@ -168,21 +168,23 @@ object Immutable {
 
 import scala.collection.mutable.HashMap
 
-sealed abstract class STMap[S,K,V] {
-  protected def value:HashMap[K,V]
+sealed trait STMap[S,K,V] {
+  protected def table:HashMap[K,V]
 
   def write(k:K, v:V):ST[S,Unit] = new ST[S,Unit] {
     def run(s:S) = {
-      value.put(k, v)
+      table.put(k, v)
       ((),s)
     }
   }
-  def read(k:K):ST[S,Option[V]] = ST(value.get(k)) 
+  
+  def read(k:K):ST[S,Option[V]] = ST(table.get(k)) 
+
 }
 
 object STMap {
   def apply[S,K,V](k:K, v:V):ST[S,STMap[S,K,V]] = 
     ST(new STMap[S,K,V] {
-      lazy val value = new HashMap[K,V]()
+      val table = new HashMap[K,V]()
     })
 }
