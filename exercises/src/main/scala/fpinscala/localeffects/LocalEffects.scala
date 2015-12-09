@@ -171,20 +171,20 @@ import scala.collection.mutable.HashMap
 sealed trait STMap[S,K,V] {
   protected def table:HashMap[K,V]
 
-  def write(k:K, v:V):ST[S,Unit] = new ST[S,Unit] {
-    def run(s:S) = {
-      table.put(k, v)
-      ((),s)
-    }
-  }
-  
-  def read(k:K):ST[S,Option[V]] = ST(table.get(k)) 
+  def apply(k:K):ST[S,V] = ST(table(k))
 
+  def size:ST[S,Int] = ST(table.size) 
+
+  def put(k:K, v:V):ST[S,Option[V]] = ST(table.put(k,v)) 
+
+  def get(k:K):ST[S,Option[V]] = ST(table.get(k)) 
+
+  def remove(k:K):ST[S,Option[V]] = ST(table.remove(k))
 }
 
 object STMap {
-  def apply[S,K,V](k:K, v:V):ST[S,STMap[S,K,V]] = 
+  def empty[S,K,V](k:K, v:V):ST[S,STMap[S,K,V]] = 
     ST(new STMap[S,K,V] {
-      val table = new HashMap[K,V]()
+      val table = HashMap.empty[K,V]
     })
 }
