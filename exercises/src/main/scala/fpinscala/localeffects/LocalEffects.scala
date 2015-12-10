@@ -183,7 +183,7 @@ sealed trait STMap[S,K,V] {
 }
 
 object STMap {
-  def empty[S,K,V](k:K, v:V):ST[S,STMap[S,K,V]] = 
+  def empty[S,K,V]:ST[S,STMap[S,K,V]] = 
     ST(new STMap[S,K,V] {
       val table = HashMap.empty[K,V]
     })
