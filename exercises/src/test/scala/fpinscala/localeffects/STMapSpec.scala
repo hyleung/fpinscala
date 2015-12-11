@@ -65,4 +65,15 @@ class STMapSpec extends FlatSpec with Matchers {
     })
     r should be (1) 
   }
+  it should "-= entries" in {
+    val r = ST.runST(new RunnableST[Int] {
+      def apply[S] = for {
+        map <- STMap.empty[S,String,Int]
+        _ <- map += ("foo",1)
+        _ <- map -= "foo"
+        size <- map.size
+      } yield size 
+    })
+    r should be (0) 
+  }
 }

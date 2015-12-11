@@ -180,6 +180,10 @@ sealed trait STMap[S,K,V] {
   def get(k:K):ST[S,Option[V]] = ST(table.get(k)) 
 
   def remove(k:K):ST[S,Option[V]] = ST(table.remove(k))
+
+  def +=(kv:(K,V)):ST[S,Unit] = ST(table += kv)
+  
+  def -=(k:K):ST[S,Unit] = ST(table -= k) 
 }
 
 object STMap {
