@@ -112,6 +112,68 @@ for {
 
 So how do we run this "program"?
 
+`ST[S, STRef[S,Int]]` is **not** safe to run, whereas `ST[S,Int]` **is** safe to run. The former returns a mutable
+reference, whereas the latter returns just a value (which may have been computed using mutable references along the
+way). 
 
+In the example above, we yield an `ST[S,(Int,Int)]`.
+
+We want to disallow running any `ST[S,T]` where `T` has anything to do with `S`.
+
+Define a trait to represent `ST` actions that are safe to run:
+
+{%highlight scala%}
+trait RunnableST[A] {
+    def apply[S]:ST[S,A]
+}
+{%endhighlight%} 
+
+In the previous example, we'd wrap the expression in a `RunnableST[A]`:
+
+{% highlight scala %}
+val p = new RunnableST[(Int,Int)] { 
+    for {
+        r1 <- STRef[Nothing,Int](1)
+        r2 <- STRef[Nothing,Int](1)
+        x  <- r1.read
+        y  <- r2.read
+        _  <- r1.write(y+1)
+        _  <- r2.write(x+1)
+        a  <- r1.read
+        b  <- r2.read
+        } yield (a,b)
+}
+{% endhighlight %}
+
+We add a `runST` function to the companion object for `ST` - since `ST` is a sealed trait, `runST` will have access to
+the protected `run` function:
+
+{%highlight scala %}
+object STRef {
+    def apply[S,A](a:A): ST[S, STRef[S,A]] = ST(new STRef[S,A] {
+        var cell = a
+        })
+    def runST[A](st: RunnableST[A]):A = 
+        st.apply[Unit].run(())._1
+}
+{%endhighlight%}
+
+We can use a similar approach to implement mutable arrays, maps, etc.
+
+## Key Points
+
+- Referential transparency is *with regard* to some context
+- It's ok to have mutable state, provided that any (side) effects are non-observable
+- An effect is *non-observable* if it doesn't affect referential transparency of an expression `e` with regard to some
+program `p`
+
+> An expression `e` is referentially transparent with regard to a program `p` if every occurence of `e` in `p` can be
+> replaced by the result of evaluating `e` without affecting the meaning of `p`
+
+*Some* effects aren't going to affect the meaning of `p`. We should track effects that have an impact on the correctness
+of the program. For example, `println` probably isn't worth tracking in most cases.
+
+> tracking effects is a *choice* we make as programmers. It's a value judgement, and there are trade-offs associated
+> with how we choose. 
 
 
