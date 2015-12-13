@@ -289,7 +289,13 @@ object SimpleStreamTransducers {
     /*
      * Exercise 1: Implement `take`, `drop`, `takeWhile`, and `dropWhile`.
      */
-    def take[I](n: Int): Process[I,I] = ???
+    def take[I](n: Int): Process[I,I] = {
+      if (n == 0) Halt()
+      else Await[I,I] {
+        case Some(i) => emit(i, take(n-1))
+        case _ => Halt()
+      }
+    }
 
     def drop[I](n: Int): Process[I,I] = ???
 
