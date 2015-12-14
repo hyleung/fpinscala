@@ -34,4 +34,24 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.take[Int](5)(p(Stream.empty[Int])).toList
     result should be ('empty)
   } 
+  it should "takeWhile" in {
+    val p = Process.takeWhile[Int](i => i < 5)
+    val result = p(ints).toList
+    result.size should be (5)
+  }
+  it should "takeWhile on empty" in {
+    val p = Process.takeWhile[Int](i => i < 5)
+    val result = p(Stream.empty[Int]).toList
+    result should be ('empty)
+  }
+  it should "dropWhile" in {
+    val p = Process.dropWhile[Int](i => i < 5)
+    val result = Process.take[Int](1)(p(ints)).toList
+    result.head should be (5)
+  }
+  it should "dropWhile on empty" in {
+    val p = Process.dropWhile[Int](i => i < 5)
+    val result = Process.take[Int](1)(p(Stream.empty[Int])).toList
+    result should be ('empty)
+  }
 }
