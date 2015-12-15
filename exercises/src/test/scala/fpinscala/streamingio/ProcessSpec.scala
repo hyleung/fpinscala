@@ -54,4 +54,13 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.take[Int](1)(p(Stream.empty[Int])).toList
     result should be ('empty)
   }
+  it should "count" in {
+    val s = Stream(1,2,3,4)
+    val result = Process.count(s).toList
+    result should be (List(1,2,3,4))
+  }
+  it should "count empty" in {
+    val result = Process.count(Stream.empty[Int]).toList
+    result should be ('empty)
+  }
 }
