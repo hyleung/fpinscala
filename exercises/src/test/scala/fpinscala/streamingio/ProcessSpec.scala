@@ -63,4 +63,9 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.count(Stream.empty[Int]).toList
     result should be ('empty)
   }
+  it should "compute a running mean" in {
+    val s = Stream[Double](1.0,2.0,3.0,4.0)
+    val result = Process.mean(s).toList
+    result should be (List(1,1.5, 2,2.5))
+  }
 }
