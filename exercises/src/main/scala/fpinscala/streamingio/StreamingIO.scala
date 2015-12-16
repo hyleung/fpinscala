@@ -352,7 +352,8 @@ object SimpleStreamTransducers {
 
     /* Exercise 4: Implement `sum` and `count` in terms of `loop` */
 
-    def sum2: Process[Double,Double] = ???
+    def sum2: Process[Double,Double] =
+      loop[Double,Double,Double](0.0)((i,s) => (i+s,i+s))
 
     def count3[I]: Process[I,Int] =
       loop[Int,I,Int](0)((i,s) => (s+1, s+1))

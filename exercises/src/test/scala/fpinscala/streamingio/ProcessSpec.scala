@@ -77,4 +77,12 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.count3(Stream.empty[Int]).toList
     result should be ('empty)
   }
+  it should "sum2" in {
+    val result = Process.sum2(Stream(1,2,3,4)).toList
+    result should be (List(1,3,6,10))
+  }
+  it should "sum2 on empty" in {
+    val result = Process.sum2(Stream.empty[Double]).toList
+    result should be ('empty)
+  }
 }
