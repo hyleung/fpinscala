@@ -354,8 +354,8 @@ object SimpleStreamTransducers {
 
     def sum2: Process[Double,Double] = ???
 
-    def count3[I]: Process[I,Int] = ???
-
+    def count3[I]: Process[I,Int] =
+      loop[Int,I,Int](0)((i,s) => (s+1, s+1))
     /*
      * Exercise 7: Can you think of a generic combinator that would
      * allow for the definition of `mean` in terms of `sum` and

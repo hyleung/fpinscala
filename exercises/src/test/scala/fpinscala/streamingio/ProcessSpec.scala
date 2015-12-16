@@ -68,4 +68,13 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.mean(s).toList
     result should be (List(1,1.5, 2,2.5))
   }
+  it should "count3" in {
+    val s = Stream(1,2,3,4)
+    val result = Process.count3(s).toList
+    result should be (List(1,2,3,4))
+  }
+  it should "count3 empty" in {
+    val result = Process.count3(Stream.empty[Int]).toList
+    result should be ('empty)
+  }
 }
