@@ -85,7 +85,12 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.sum2(Stream.empty[Double]).toList
     result should be ('empty)
   }
+  it should "zipWithIndex" in {
+    val result = Process.zipWithIndex(Stream("a","b","c","d")).toList
+    result should be (List(("a",0),("b",1),("c",2),("d",3)))
+  }
   behavior of "|> operator"
+
   it should "pipe two proceses" in {
     val p:Process[Int,Int] = Process.take(2) |> Process.count
     val result = p(Stream(1,2,3,4,5)).toList

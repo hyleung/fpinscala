@@ -384,6 +384,12 @@ object SimpleStreamTransducers {
      * See definition on `Process` above.
      */
 
+    def zipWithIndex[I]: Process[I,(I,Int)] = {
+      def go(n:Int):Process[I,(I,Int)] =
+        await(i => emit((i,n), go(n+1)))
+      go(0)
+    }
+
     /*
      * Exercise 8: Implement `exists`
      *
