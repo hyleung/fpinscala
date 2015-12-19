@@ -89,6 +89,11 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.zipWithIndex(Stream("a","b","c","d")).toList
     result should be (List(("a",0),("b",1),("c",2),("d",3)))
   }
+  it should "zip" in {
+    val p:Process[Int,(Int,Int)]  = Process.zip(Process.count, Process.count)
+    val result = p(Stream(1,2,3,4)).toList
+    result should be (List((1,1),(2,2),(3,3),(4,4)))
+  }
   behavior of "|> operator"
 
   it should "pipe two proceses" in {

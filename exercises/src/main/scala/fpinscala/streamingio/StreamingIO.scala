@@ -369,9 +369,25 @@ object SimpleStreamTransducers {
      * Exercise 7: Can you think of a generic combinator that would
      * allow for the definition of `mean` in terms of `sum` and
      * `count`?
+     *
+     * Zip - 5 cases
+     *   - both emit => emit the heads of both and zip the tail
+     *   - p1 awaits => when p1 is ready, zip with p2
+     *   - p2 awaits => when p2 is ready, zip with p1
+     *   - p1 halts  => halt, don't care about p2
+     *   - p2 halts  => halt, don't care about p1
      */
+    def zip[A,B,C](p1: Process[A,B], p2: Process[A,C]): Process[A,(B,C)] = (p1,p2) match {
+      case (Emit(h1,t1),Emit(h2,t2)) => Emit((h1,h2),zip(t1,t2)) 
+      case (Await(r1),_) =>
+        Await((o:Option[A]) => zip(r1(o),feed(o)(p2)))
+      case (_, Await(r2)) => 
+        Await((o:Option[A]) => zip(feed(o)(p1),r2(o)))
+      case (Halt(),_) => Halt()
+      case (_,Halt()) => Halt()
+    }
 
-    def feed[A,B](oa: Option[A])(p: Process[A,B]): Process[A,B] =
+     def feed[A,B](oa: Option[A])(p: Process[A,B]): Process[A,B] =
       p match {
         case Halt() => p
         case Emit(h,t) => Emit(h, feed(oa)(t))
