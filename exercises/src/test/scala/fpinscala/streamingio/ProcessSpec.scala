@@ -94,6 +94,10 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = p(Stream(1,2,3,4)).toList
     result should be (List((1,1),(2,2),(3,3),(4,4)))
   }
+  it should "exists" in {
+    val result = Process.exists[Int](_ % 2 == 0)(Stream(1,3,5,6,7))
+    result should be (Stream(false,false,false,true,false))
+  }
   behavior of "|> operator"
 
   it should "pipe two proceses" in {
