@@ -450,6 +450,8 @@ object SimpleStreamTransducers {
       processFile[Double,Double](f,processToCelsius ,0)((b,a) => b)
 
     def processToCelsius:Process[String,Double] = 
+      filter((s:String) => !s.isEmpty) |>
+      filter((s:String) => !s.startsWith("#")) |>
       lift((s:String) => s.toDouble) |>
       lift((d:Double) => toCelsius(d))
 
