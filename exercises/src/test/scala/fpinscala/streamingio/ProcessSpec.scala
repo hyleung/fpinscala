@@ -98,6 +98,10 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = Process.exists[Int](_ % 2 == 0)(Stream(1,3,5,6,7))
     result should be (Stream(false,false,false,true,false))
   }
+  it should "toCelsius" in {
+    val result = (Process.processToCelsius |> Process.lift(d => d.round))(Stream("32","0","20"))
+    result should be (Stream(0,-18,-7))
+  }
   behavior of "|> operator"
 
   it should "pipe two proceses" in {

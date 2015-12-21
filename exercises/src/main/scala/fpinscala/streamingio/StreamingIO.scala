@@ -446,6 +446,12 @@ object SimpleStreamTransducers {
      * Exercise 9: Write a program that reads degrees fahrenheit as `Double` values from a file,
      * converts each temperature to celsius, and writes results to another file.
      */
+    def processFileToCelsius(f: java.io.File):IO[Double] =
+      processFile[Double,Double](f,processToCelsius ,0)((b,a) => b)
+
+    def processToCelsius:Process[String,Double] = 
+      lift((s:String) => s.toDouble) |>
+      lift((d:Double) => toCelsius(d))
 
     def toCelsius(fahrenheit: Double): Double =
       (5.0 / 9.0) * (fahrenheit - 32.0)
