@@ -102,6 +102,14 @@ class ProcessSpec extends FlatSpec with Matchers {
     val result = (Process.processToCelsius |> Process.lift(d => d.round))(Stream("32","0","20"))
     result should be (Stream(0,-18,-7))
   }
+  it should "toCelsius with empty" in {
+    val result = (Process.processToCelsius |> Process.lift(d => d.round))(Stream("", "32","0","20"))
+    result should be (Stream(0,-18,-7))
+  }
+  it should "toCelsius with #" in {
+    val result = (Process.processToCelsius |> Process.lift(d => d.round))(Stream("#", "32","0","20"))
+    result should be (Stream(0,-18,-7))
+  }
   behavior of "|> operator"
 
   it should "pipe two proceses" in {
