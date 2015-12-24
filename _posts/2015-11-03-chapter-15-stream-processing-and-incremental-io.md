@@ -59,6 +59,26 @@ lines.filter(!_.trim.isEmpty)
 
 But, we don't have a `Stream[String]`, but a file...
 
+A cheat using *lazy I/O*:
+{%highlight scala%}
+def lines(filename:String}:IO[Stream[String]] = IO {
+    val src = io.Source.fromFile(filename)
+    src.getLines.toStream append {src.close; Stream.empty;}
+{%endhighlight%}
+
+This is a cheat because the value inside (the `Stream`) isn't a pure value - it executes the side-effect of readng the
+file. Also, the file resource is **only** closed when we read to the end of the stream - problematic for cases where we
+wish to terminate early.
+
+There's also nothing to prevent traversal of the stream more than once. Since we are executing some side-effecting IO,
+we may run into problems when there are multiple threads processig the same stream.
+
+In order to process the `Stream` safely, we'd need to have a good idea of where it comes from, where/how it's being
+used, etc. 
+
+> This is bad for composition, where we shouldn't have to know anything about the value other than its type
+
+
 
 
 
