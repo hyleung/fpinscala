@@ -4,6 +4,7 @@ title:  "Chapter 10: Monoids"
 date:   2015-10-28 20:32:40 -0700
 categories: fpinscala chapter_notes
 ---
+# Monoids
 
 A `Monoid` is an [algebraic structure](https://en.wikipedia.org/wiki/Algebraic_structure).
 
