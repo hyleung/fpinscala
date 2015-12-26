@@ -78,7 +78,45 @@ used, etc.
 
 > This is bad for composition, where we shouldn't have to know anything about the value other than its type
 
+## Simple stream transducers
 
+Stream transducers specify transformations from one stream to another. We're using the term "stream" loosely to talk
+about *anything* that might emit a stream of data - could be from a file, http, etc.
 
+Define a `Process` type that allows us to express these transformations:
 
+{%highlight scala%}
+sealed trait Process[I,O]
 
+//We use a default value for tail of Halt() so that we can use Emit(x) 
+case class Emit[I,O](head:O,
+                    tail:Process[I,O] = Halt[I,O]()) extends Process[I,O]
+
+case class Await[I,O](recv:Option[I] => Process[I,O]) extends Process[I,O]
+
+case class Halt[I,O]() => extends Process[I,O]
+{%endhighlight%}
+
+What we have is a sort of state-machine which can be in one of three states:
+
+* `Emit(head,tail`: emit the head value to the output stream and transition to the tail state
+* `Await(recv)`: request a value from the input stream (which may or may not be present) and use the `recv` function to
+determine the next state
+* `Halt`: we're done. There are no more values to be read or emitted.
+
+The state-machine is driven via a *driver* function that consumes our `Process` "program" and the input stream.
+
+For a `Stream`, the driver function would look something like this (method on `Process`):
+
+{%highlight scala linenos%}
+def apply(s:Stream[I}):Stream[O] = this match {
+    case Halt() => Stream() //we're done
+    case Await(recv) => s match {
+        case h #:: t => recv(Some(h))(t)
+        case xs => recv(None)(xs)
+    case Emit(h,t) => h #:: t(s)
+{%endhighlight%}
+
+Logic for lines 3-5 above. If `s` is a `Stream` with a head and more values (`t`), evaluate `recv` on `h`, and pass
+remainder of the `Stream`, `t`, to the result (which will be another `Process`). If there are no more values in the
+input stream (`xs`), then evaluate `recv` with `None` and pass the empty stream to the resulting `Process`.
