@@ -120,3 +120,85 @@ def apply(s:Stream[I}):Stream[O] = this match {
 Logic for lines 3-5 above. If `s` is a `Stream` with a head and more values (`t`), evaluate `recv` on `h`, and pass
 remainder of the `Stream`, `t`, to the result (which will be another `Process`). If there are no more values in the
 input stream (`xs`), then evaluate `recv` with `None` and pass the empty stream to the resulting `Process`.
+
+## Creating Processes
+
+We can take any function `I => O` and *lift* it into a 'Process[I,O]` by defining a function as follows:
+
+{%highlight scala%}
+def liftOne[I,O](f:I => O):Process[I,O] = 
+    Await {
+        case Some(i) => Emit(f(i))
+        case None => Halt()
+    }
+}
+{%endhighlight%}
+
+This function just waits for a value to be emitted, applies the function `f` to it and emits the result. To transform an
+entire stream, we just repleat this.
+
+{%highlight scala%}
+def repeat:Process[I,O] = {
+    def go(p:Process[I,O]:Process[I,O] = p match {
+        case Halt() => go(this) //if the process halts, restart it. i.e. liftOne completes
+        case Await(recv) => Await {
+            case None => recv(None) //if there are no more values, don't repeat, evaluate recv and return
+            case i => go(recv(i))
+            }
+        case Emit(h,t) => Emit(h,go(t))
+    }
+    go(this)
+}
+{%endhighlight%}
+
+...then to define a `lift` function that transforms the entire stream:
+
+{%highlight scala%}
+def lift[I,O](f:I => O):Process[I,O] = 
+    liftOne(f).repeat
+{%endhighlight%} 
+
+We can define other useful combinators. For example, a *filter* `Process` that filters out elements that don't match a
+predicate:
+
+{%highlight scala%}
+def filter[I](p: I => Boolean):Process[I,I] = 
+    Await[I,I] {
+        case Some(i) if p(i) => emit(i)
+        case _ => Halt()
+    }.repeat
+    {%endhighlight%}
+
+    ...or `sum`:
+
+{%highlight scala%}
+def sum:Process[Double,Double] = 
+    def go(acc:Double):Process[Double,Double] = 
+        Await {
+            case Some(d) => Emit(d + acc, go(d +acc))
+            case None => Halt()
+        }
+    go(0.0)
+{%endhighlight%}
+
+Other combinators:
+
+- `take[I](n:Int):Process[I,I]`
+- `drop[I](n:Int):Process[I,I]`
+- `takeWhile[I](p:I => Boolean):Process[I,I]`
+- `dropWhile[I](p:I => Boolean):Process[I,I]`
+- `count[I]:Process[I,Int]`
+- `mean:Process[Double,Double]`
+
+The pattern from the implementaion of `sum` appears in the implementation of other combinators - we have some state (in
+this case, the accumulator) that gets updated. We can pull out a `loop` function.
+
+{%highlight scala%}
+def loop[S,I,O](z:S)(f:(I,S) => (O,S)):Process[I,O] =
+    Await((i:I) => f(i,z) match {
+        case(O,s2) => emit(o,loop(s2)(f))
+    })
+{%endhighlight%} 
+
+
+
