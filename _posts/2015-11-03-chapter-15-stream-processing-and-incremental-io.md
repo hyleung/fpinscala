@@ -201,4 +201,76 @@ def loop[S,I,O](z:S)(f:(I,S) => (O,S)):Process[I,O] =
 {%endhighlight%} 
 
 
+## Composing and Appending Processes
+
+This is where we were trying to get to (getting back to a place where we can compose our functions). Given two
+Processes, `f` and `g`, we want to pass the output of `f` to the input of `g`. 
+
+{%highlight scala linenos%}
+def |>[O2](g: Process[O,O2]): Process[I,O2] = g match {
+  case Halt() => Halt() //if p2 is a halt, don't bother
+  case Emit(h,t) => Emit(h, this |> t) //if p2 emits, emit the value and compose this with the tail
+  case Await(recv) => this match { //recv is Option[I] => Process[I,O]
+    case Halt() => Halt() |> recv(None) //if this is a halt, pass None to recv
+    case Emit(h,t) => t |> recv(Some(h))
+    case Await(r) => Await(i  => r(i) |> g)
+  }
+}
+{%endhighlight%}
+
+*[Note: this is defined on `Process` trait itself]*
+
+- If `g` halts, then we just halt - we don't need to bother with `f` (`this`). 
+- If `g` emits, we emit the value and compose `f` with the tail of `g`
+- If `g` awaits, we examine `f`:
+    - If `f` halts, we `Halt` and compose with the result of `recv(None)`
+    - If `f` emits, we take the value emitted by `f` and pass it to the `recv` function (from `g`) and compose with the
+    tail
+    - If `f` awaits, when we get the value back, we evaluate `r` and compose the result with `g`
+
+`f |> g` *fuses* transformations - as soon as `f` emits a value, it's tranformed by `g`. This means we can pipeline a
+sequence of transformations.
+
+For example, we can define `map` as follows:
+
+{%highlight scala%}
+def map[O2](f:O => O2):Process[I,O2] = this |> lift(f)
+{%endhighlight%}
+
+Many of the usual operations defined for sequences can also be defined for `Process`.
+
+{%highlight scala linenos%}
+def ++(p: => Process[I,O]):Process[I,O] = this match {
+    case Halt() => p //the first Process has terminated, continue with the second
+    case Emit(h,t) => Emit(h,t ++ p)
+    case Await(recv) => Await(recv andThen (_ ++ p))
+}
+{%endhighlight%}
+
+Line 4: if this is an `Await`, construct a new `Await` where we evaluate `recv` and append the result to `p`.
+
+We can use `++` to implement `flatMap`.
+
+{%highlight scala%}
+def flatMap[O2](f: O => Process[I,O2]):Process[I,O2] = this match {
+    case Halt() => Halt()
+    case Emit(h,t) => f(h) ++ t.flatMap(f)
+    case Await(recv) => Await(recv andThen (_ flatMap f))
+}
+{%endhighlight%}
+
+We can form a `Process` monad by defining a monad instance as follows (note: we have to use the partially applied type
+parameter trick):
+
+{%highlight scala%}
+def monad[I]:Monad[({type f[x] = Process[I,x]})#f] =
+    new Monad[({type f[x] = Process[I,x]})#f] {
+        def unit[O](o: => O):Process[I,O] = Emit(o)
+        def flatMap[O,O2](p:Process[I,O])(f:O => Process[I,O2]):Process[I,O2] =
+            p flatMap f
+    }
+{%endhighlight%}
+
+
+
 
