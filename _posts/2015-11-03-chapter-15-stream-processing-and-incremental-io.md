@@ -271,6 +271,104 @@ def monad[I]:Monad[({type f[x] = Process[I,x]})#f] =
     }
 {%endhighlight%}
 
+## File processing
 
+Now we can go back to our original example, file processing:
+
+{%highlight scala%}
+def processFile[A,B](f:java.io.File,
+                     p:Process[String,A],
+                     z:B)(g:(B,A) => B):IO[B] = IO {
+    @annotation.tailrec
+    def go(ss:Iterator[String],curr:Process[String,A],acc:B):B =
+        curr match {
+            case Halt() => acc
+            case Await(recv) =>
+                val next = if (ss.hasNext) recv(Some(ss.next))
+                           else recv(None)
+                go(ss,next,acc)
+            case Emit(h,t) => go(ss,t,g(acc,h))
+        }
+    val s = io.Source.fromFile(f)
+    try go(s.getLines, p, z)
+    finally s.close
+} 
+{%endhighlight%}
+
+## An Extensible Process type
+
+As implemented, `Process` can only be one of three "instructions": `Halt`, `Emit`, or `Await`. To make `Process` more
+extensible, we can parameterize the type. Note that this is very similar to what we did for `Async` with `Free`.
+
+{%highlight scala linenos%}
+trait Process[F[_],O]
+
+object Process {
+    case class Await[F[_],O](
+        req:F[A],
+        recv:Either[Throwable,A] => Process[F,O]) extends Process[F,O]
+    case class Emit[F[_],O](
+        head:O,
+        tail:Process[F,O]) extends Process[F,O]
+    case class Halt[F[_],O](err:Throwable) extends Process[F,O]
+
+    case object End extends Exception
+    case object Kill extends Exception
+}
+{%endhighlight%}
+
+Notes:
+    
+- `recv` on line 6 takes an `Either` so that we can handle errors
+- `Halt` takes a throwable now, we define `End` to indicate "normal" termination and `Kill` to indicate forceful
+termination
+
+There are some operations that we can define for this `Process` type that are independent of the choice of `F`.
+
+- `map`
+- `filter`
+- `++` (append)
+
+These operations can be implemented via some helper functions:
+
+{%highlight scala%}
+def Try[F[_],O](p: => Process[F,O]):Process[F,O] =
+    try p
+    catch { case e:Throwable => Halt(e) }
+
+def onHalt(f:Throwable => Process[F,O]):Process[F,O] = this match {
+    case Halt(e) => Try(f(e))
+    case Emit(h,t) => Emit(h,t.onHalt f)
+    case Await(req,recv) => Await(req, recv andThen (_.onHalt(f)))
+{%endhighlight%}
+
+So, `++` for example:
+
+{%highlight scala%}
+def ++(p: => Process[F,O]):Process[F,O] =
+    this.onHalt {
+        case End => p
+        case err => Halt(err)
+}
+{%endhighlight%}
+
+We can also define a helper function for `await`, which is curried for better type inference:
+
+{%highlight scala%}
+def await[F[_],A,O](req:F[A])(recv:Either[Throwable,A] => Process[F,O]):Process[F,O] =
+    Await(req,recv)
+{%endhighlight%}
+
+FlatMap:
+
+{%highlight scala %}
+def flatMap[O2](f: O => Process[F,O2]):Process[F,O2] = 
+    this match {
+        case Halt(err) => Halt(err)
+        case Emit(o,t) => Try(f(o)) ++ t.flatMap(f)
+        case Await(req,recv) =>
+            Await(req, recv andThen (_ flatMap f))
+    }
+{% endhighlight %}
 
 
