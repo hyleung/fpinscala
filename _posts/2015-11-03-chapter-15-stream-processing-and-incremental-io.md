@@ -371,4 +371,44 @@ def flatMap[O2](f: O => Process[F,O2]):Process[F,O2] =
     }
 {% endhighlight %}
 
+## Sources
 
+Now we can revisit the file processing example. In this case, our `F` will be some `IO`.
+
+If we subsituted `F` for `IO`, this is what `Await` would look like:
+
+{% highlight scala %}
+case class Await[A,O](
+    req:IO[A],
+    recv:Either[Throwable,A] => Process[IO,O]
+    ) extends Process[IO,O]
+{% endhighlight %}
+
+We can do the usual flatMap-y things in `req` (`IO[A]`) and handle the result (which will be either an error or a value)
+in `recv`.
+
+A simple(?) implementation of an interpreter:
+
+{% highlight scala linenos %}
+def runLog[O](src:Process[IO,O]):IO[IndexedSeq[O]] = IO {
+    val E = java.util.concurrent.Executors.newFixedThreadPool(4)
+    @annotation.tailrec
+    def go(curr:Process[IO,O], acc:IndexedSeq[O]):IndexedSeq[O] =
+        curr match {
+            case Emit(h,t) => go(t, acc :+ h)
+            case Halt(End) => acc //we're done
+            case Halt(err) => throw err
+            case Await(req,recv) => 
+                val next = 
+                    try recv(Right(unsafePerformIO(req)(E)))
+                    catch { case err:Throwable => recv(Left(err)) }
+                go(next,acc)
+        }
+    try go(src,IndexedSeq())
+    finally E.shutdown
+}
+{% endhighlight %}
+
+Mostly straightforward. In the `Await` case (line 9), we peform some IO operation based on the `req` (and using our
+threadpool) which can potentially fail. In either case, we let `recv` decide what the next state should be and continue
+by calling `go` with that next state.
