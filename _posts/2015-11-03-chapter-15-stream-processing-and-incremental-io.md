@@ -412,3 +412,93 @@ def runLog[O](src:Process[IO,O]):IO[IndexedSeq[O]] = IO {
 Mostly straightforward. In the `Await` case (line 9), we peform some IO operation based on the `req` (and using our
 threadpool) which can potentially fail. In either case, we let `recv` decide what the next state should be and continue
 by calling `go` with that next state.
+
+We can define `runLog` more generally for any monad where catching and raising exceptions can occur.
+
+{% highlight scala %}
+trait MonadCatch[F[_]] extends Monad[F] {
+  def attempt[A](a: F[A]): F[Either[Throwable,A]]
+  def fail[A](t: Throwable): F[A]
+}
+
+def runLog(implicit F: MonadCatch[F]): F[IndexedSeq[O]] = {
+  def go(curr:Process[F,O], acc:IndexedSeq[O]):F[IndexedSeq[O]] =
+    curr match {
+      case Emit(h,t) => go(t, acc :+ h) 
+      case Halt(End) => F.unit(acc)
+      case Halt(err) => F.fail(err) 
+      case Await(req,recv) => F.flatMap(F.attempt(req)) {e => go(Try(recv(e)), acc) } 
+    }
+  go(this,IndexedSeq())
+  }
+{% endhighlight %}
+
+## Ensuring Resource Safety
+
+If we're doing IO, we need to find a way to ensure resource safety. I.e. if we're processing a file, we need to ensure
+that we close the file after we're done, etc.
+
+> A producer should free any underlying resources as soon as it knows it has no further values to produce, whether due
+> to normal exhaustion or an exception.
+
+But the *consumer* may decide to terminate early, therefore:
+
+> Any process d that consumes values from another process p must ensure that cleanup actions of p are run before d halts
+
+The cases we need to consider:
+
+- producer exhaustion, signaled by `End` when the source has no more values to emit
+- forcible termination, singaled by `Kill` when the consumer of the process is finished consuming (possibly before
+producer exhaustion)
+- abnormal termination due to some error in either the producer or the consumer
+
+In each of these cases, we will want to close our underlying resource.
+
+We need to ensure that the `recv` function in the `Await` constructor **always** runs the current set of cleanup actions
+whenever it receives a `Left` (i.e. some sort of termination). To do this, we'll introduce a new combinator,
+`onComplete` which will allow us to append some logic to a `Process` that will be invoked regardess of how the Process
+terminates.
+
+{% highlight scala %}
+def onComplete(p: => Process[F,O]):Process[F,O] =
+    this.onHalt {
+        case End => p.asFinalizer
+        case err => p.asFinalizer ++ Halt(err)
+    }
+   
+def asFinalizer: Process[F,O] = this match {
+  case Emit(h, t) => Emit(h, t.asFinalizer)
+  case Halt(e) => Halt(e)
+  case Await(req,recv) => await(req) {
+    case Left(Kill) => this.asFinalizer
+    case x => recv(x)
+  }
+}
+{% endhighlight %}
+
+## Single-input processes
+
+What does `F` need to be in order to work with `Process[I,O]`? We need an `F` that only makes requests for values of
+type `I`.
+
+{% highlight scala linenos %}
+case class Is[I] {
+    sealed trait f[X]
+    val Get = new f[I]{}
+}
+
+type Process[I,O] = Process[Is[I]#f,O]
+{% endhighlight %}
+
+To see how this works, substitute `Is[I]#f` in for `F` in `Await`:
+
+{% highlight scala %}
+case class Await[A,O](
+    req:Is[I]#f[A],
+    recv:Either[Throwable,A] => Process[Is[I]#f,O]) extends Process[Is[I]#f,O]
+{% endhighlight %}
+
+`Is[I]#f` can *only* be `Get:f[I]` (sealed trait with only a single instance) - and `I` can only be `A`, which means
+that `Await` can only be used to `req` and `recv` values of type `I`.
+
+
