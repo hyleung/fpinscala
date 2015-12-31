@@ -487,7 +487,7 @@ case class Is[I] {
     val Get = new f[I]{}
 }
 
-type Process[I,O] = Process[Is[I]#f,O]
+type Process1[I,O] = Process[Is[I]#f,O]
 {% endhighlight %}
 
 To see how this works, substitute `Is[I]#f` in for `F` in `Await`:
@@ -501,4 +501,56 @@ case class Await[A,O](
 `Is[I]#f` can *only* be `Get:f[I]` (sealed trait with only a single instance) - and `I` can only be `A`, which means
 that `Await` can only be used to `req` and `recv` values of type `I`.
 
+Some helper functions we can introduce for better type inference:
+
+{% highlight scala %}
+def await1[I,O](
+    recv: I => Process1[I,O],
+    fallback: Process1[I,O] = halt1[I,O]): Process1[I,O] =
+        Await(Get[I], (e:Either[Throwable,I]) => e match {
+            case Left(End) => fallback
+            case Left(err) => Halt(err)
+            case Right(i) => Try(recv(1))
+        })
+
+def emit1[I,O](h:O,t:Process1[I,O] = halt[I,O]): Process1[I,O] =
+    emit(h,t)
+
+def halt1[I,O]:Process1[I,O] = Halt[Is[I]#f, O](End)
+{% endhighlight %}
+
+Many of the combinators like `lift` and `filter` will look very similar to the previous implementations, except that
+these will return `Process1` instead.
+
+Process composition now looks like this:
+
+{% highlight scala linenos %}
+def |>[O2](p2: Process1[O,O2]): Process[F,O2] = {
+  p2 match {
+    case Halt(e) => this.kill onHalt { e2 => Halt(e) ++ Halt(e2) }
+    case Emit(h, t) => Emit(h, this |> t)
+    case Await(req,recv) => this match {
+      case Halt(err) => Halt(err) |> recv(Left(err))
+      case Emit(h,t) => t |> Try(recv(Right(h)))
+      case Await(req0,recv0) => await(req0)(recv0 andThen (_ |> p2))
+    }
+  }
+}
+
+@annotation.tailrec
+final def kill[O2]: Process[F,O2] = this match {
+  case Await(req,recv) => recv(Left(Kill)).drain.onHalt {
+    case Kill => Halt(End) // we convert the `Kill` exception back to normal termination
+    case e => Halt(e)
+  }
+  case Halt(e) => Halt(e)
+  case Emit(h, t) => t.kill
+}
+
+final def drain[O2]: Process[F,O2] = this match {
+  case Halt(e) => Halt(e)
+  case Emit(h, t) => t.drain
+  case Await(req,recv) => Await(req, recv andThen (_.drain))
+}
+{% endhighlight %}
 
