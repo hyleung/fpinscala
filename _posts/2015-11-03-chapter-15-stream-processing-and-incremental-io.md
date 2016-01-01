@@ -554,3 +554,13 @@ final def drain[O2]: Process[F,O2] = this match {
 }
 {% endhighlight %}
 
+The `drain` function just runs all the processes, ignoring the output until we get to
+`Halt`. The `kill` helper function takes any process and halts it.
+
+The `|>` implementation is similar to before, except we handle the `Halt` cases a bit
+differently, making sure that we run the `onHalt` on `this` (the "left" process) before
+letting the "right" process (`p2`) terminate.
+
+Since we've defined `|>` in terms on `Process` (and not `Process1`) this will work for the
+single-input streams :w
+as well as multi-input streams.
