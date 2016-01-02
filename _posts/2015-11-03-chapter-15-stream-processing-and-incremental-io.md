@@ -550,7 +550,7 @@ final def kill[O2]: Process[F,O2] = this match {
 final def drain[O2]: Process[F,O2] = this match {
   case Halt(e) => Halt(e)
   case Emit(h, t) => t.drain
-  case Await(req,recv) => Await(req, recv andThen (_.drain))
+  case Await(req,recv) => Await(req, recv andThen (p => p.drain))
 }
 {% endhighlight %}
 
@@ -564,3 +564,73 @@ letting the "right" process (`p2`) terminate.
 Since we've defined `|>` in terms on `Process` (and not `Process1`) this will work for the
 single-input streams :w
 as well as multi-input streams.
+
+## Multiple input streams
+
+Suppose we want to take streams of values from *two* files, zip them together, and appy
+some processing to the values.
+
+Similar to what we had to do for single-input streams, we need to construct a type to
+ensure that `F` is correct. 
+
+In this case, we have two input types `I` and `I2`.
+
+{% highlight scala %}
+case class T[I,I2]() {
+    sealed trait f[X] { def get:Either[I => X, I2 => X] }
+    val L = new f[I] { def get = Left(identity) }
+    val R = new f[I2] { def get = Right(identity) }
+}
+def L[I,I2] = T[I,I2]().L
+def R[I,I2] = T[I,I2]().R
+{% endhighlight %}
+
+`identity` is an identify function (`def identity[A](x: A): A`) which is defined in
+`scala.Predef` - remember that the type we're going for is an `Either` of two functions.
+
+Again, we define a type alias:
+
+{% highlight scala %}
+type Tee[I,I2,O] = Process[T[I,I2]#f,O]
+{% endhighlight %}
+
+*(It's called a "Tee", as in the letter "T", which looks like a picture of two inputs
+merging)*
+
+Again, some helper functions for beter type inference:
+
+{% highlight scala %}
+def haltT[I,I2,O]: Tee[I,I2,O] =
+  Halt[T[I,I2]#f,O](End)
+
+def awaitL[I,I2,O](recv: I => Tee[I,I2,O],
+                   fallback: => Tee[I,I2,O] = haltT[I,I2,O]): Tee[I,I2,O] =
+  await[T[I,I2]#f,I,O](L) {
+    case Left(End) => fallback
+    case Left(err) => Halt(err)
+    case Right(a) => Try(recv(a))
+  }
+
+def awaitR[I,I2,O](recv: I2 => Tee[I,I2,O],
+                   fallback: => Tee[I,I2,O] = haltT[I,I2,O]): Tee[I,I2,O] =
+  await[T[I,I2]#f,I2,O](R) {
+    case Left(End) => fallback
+    case Left(err) => Halt(err)
+    case Right(a) => Try(recv(a))
+  }
+{% endhighlight %}
+
+In this case, we need a left and right flavour of `await` depending on which "side" we're
+requesting values for.
+
+An implementaton of a `zipWith` combinator:
+
+{% highlight scala %}
+def zipWith[I,I2,O](f: (I,I2) => O): Tee[I,I2,O] =
+  awaitL[I,I2,O](i  =>
+  awaitR        (i2 => emitT(f(i,i2)))) repeat
+{% endhighlight %}
+
+We `awaitL` the `I` value and then `awaitR` the `I2` value, apply `f` to the resulting
+pair and emit the result. In this particular case, we will terminate as soon as either
+stream is exhausted, but are other implementations that could be written.
