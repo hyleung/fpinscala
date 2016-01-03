@@ -476,6 +476,16 @@ def asFinalizer: Process[F,O] = this match {
 }
 {% endhighlight %}
 
+We can define a general purpose combinator that helps us construct these resource-safe
+processes:
+
+{% highlight scala %}
+def resource[R,O](acquire: IO[R])
+                (use:R => Process[IO,O])
+                (release: R => Process[IO,O]): Process[IO,O] =
+    await[IO,R,O](acquire)(r => use(r).onComplete(release(r)))
+{% endhighlight %}
+
 ## Single-input processes
 
 What does `F` need to be in order to work with `Process[I,O]`? We need an `F` that only makes requests for values of
@@ -634,3 +644,43 @@ def zipWith[I,I2,O](f: (I,I2) => O): Tee[I,I2,O] =
 We `awaitL` the `I` value and then `awaitR` the `I2` value, apply `f` to the resulting
 pair and emit the result. In this particular case, we will terminate as soon as either
 stream is exhausted, but are other implementations that could be written.
+
+## Sinks
+
+To perform output using the `Process` type, we can represent a *sink* as a `Process` that
+emits functions:
+
+{% highlight scala %}
+type Sink[F[_],O] = Process[F[_],O => Process[F,Unit]]
+{% endhighlight %}
+
+Here's a `Sink` that writes stuff to a file:
+
+{% highlight scala %}
+/* A `Sink` which writes input strings to the given file. */
+def fileW(file: String, append: Boolean = false): Sink[IO,String] =
+  resource[FileWriter, String => Process[IO,Unit]]
+    { IO { new FileWriter(file, append) }}
+    { w => constant { (s: String) => eval[IO,Unit](IO(w.write(s))) }}
+    { w => eval_(IO(w.close)) }
+
+/* The infinite, constant stream. */
+def constant[A](a: A): Process[IO,A] =
+  eval(IO(a)).flatMap { a => Emit(a, constant(a)) }
+{% endhighlight %}
+
+There's no exception handling here - we're relying on the combinators to properly perform
+cleanup in any termination case.
+
+We can use `zipWith` to pipe `Process` output to a `Sink`:
+
+{% highlight scala linenos %}
+def to[O2](sink:Sink[F,O]):Process[F,Unit] =
+    join { (this zipWith sink)((o,f) => f(o) }
+
+def join[F[_],O](p:Process[F,Process[F,O]]):Process[F,O] =
+    p.flatMap(fa => fa) 
+{% endhighlight %}
+
+*(For the `to` implementation, recall that `Sink` produces functions of type `O => Process[F,Unit]`)*
+
