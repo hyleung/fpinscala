@@ -684,3 +684,21 @@ def join[F[_],O](p:Process[F,Process[F,O]]):Process[F,O] =
 
 *(For the `to` implementation, recall that `Sink` produces functions of type `O => Process[F,Unit]`)*
 
+## Effectful channels
+
+We can generalize the above to allow us to use something other than `Unit`.
+
+{% highlight scala %}
+def through[O2](p2:Process[F, O => Process[F,O2]):Process[O,F2] =
+    join { (this zipWith p2)((o,f) => f(o) }
+{% endhighlight %}
+
+This is pretty much the same as the implemention of `to`, except with `O2` instead of
+`Unit`.
+
+We can introduce a type alias for this:
+
+{% highlight scala %}
+type Channel[F[_],I,O] = Process[F, I => Process[F,O]]
+{% endhighlight %} 
+
