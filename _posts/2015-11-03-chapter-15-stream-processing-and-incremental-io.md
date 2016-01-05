@@ -702,3 +702,42 @@ We can introduce a type alias for this:
 type Channel[F[_],I,O] = Process[F, I => Process[F,O]]
 {% endhighlight %} 
 
+## Dynamic Resource Allocation
+
+We may wish to allocate resources *during* processing. For example, we might want to open
+files as we go along to read in data (dynamic resource allocation). Or perhaps write to multiple files (multi-sink output).
+
+{% highlight scala linenos %}
+val convertAll:Process[IO,Unit] = (for {
+    out <- fileW("celsius.txt").once
+    file <- lines("fahrenheits.txt")
+    _ <- lines(file)
+            .map(line -=> fahrenheitToCelsius(line.toDouble))
+            .flatMpa(celsius => out(celsius.toString))
+   } yield ()) drain
+{% endhighlight %}
+
+In the `convertAll` process defined above, we're opening an output file ("celsius.txt"),
+reading in a file containing a list of file names ("fahrenheit.txt") and opening **each**
+of those files (lines 3 and 4). For each of *those* files, we take each line and convert
+them to celsius and write tem to the output file (lines 5 and 6). This is an example of
+dynamic resource allocation.
+
+Here's an example of multi-sink output:
+
+{% highlight scala linenos %}
+val convertMultiSink:Process[IO,Unit] = (for {
+    file <- lines("fahrenheit.txt")
+    _ <- lines(file)
+            .map(line => fahrenheitToCelsius(line.toDouble))
+            .map(_.toString)
+            .to(fileW(file + ".celsius"))
+    } yield ()) drain
+{% endhighlight %}
+
+In this example, we're writing a *separate* `.celsius` file for each input file listed in
+"fahrenheit.txt".
+
+In both of these examples, we can still use the usual tranformations anywhere in the
+processes - and it will be resource-safe.
+
