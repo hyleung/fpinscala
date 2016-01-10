@@ -125,4 +125,149 @@ def map[A,B](s:Rand[A])(f:A => B):Rand[B] =
     }
 {% endhighlight %}
 
+...also `map2`, which takes two `Rand` and a function that operates on their values:
+
+{% highlight scala %}
+def map2[A,B,C](ra:Rand[A], rb:Rand[B])(f:(A,B) => C):Rand[C] =
+    rng => {
+        val (a,r1) = ra(rng)
+        val (b,r2) = rb(r1)
+        (f(a,b),r2)
+    }
+{% endhighlight %}
+
+`map2` turns out to be a prety useful combnator. For example, here's a `both` combinator
+that returns the pair of values:
+
+{% highlight scala %}
+def both[A,B](ra:Rand[A], rb:Rand[B]):Rand[(A,B)] =
+    map2(ra,rb)((_,_))
+{% endhighlight %}
+
+Here's `sequence`, which takes a list of `Rand` and returns a `Rand[List]`:
+
+{% highlight scala %}
+def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List.empty[A])){ (f,acc) =>
+      map2(f,acc)( (x,xs) => x :: xs)
+    }
+{% endhighlight %}
+
+## Nesting State Actions
+
+Example:
+
+{% highlight scala %}
+def nonNegativeLessThan(n:Int):Rand[Int] = { rng =>
+    val (i,rng2) = nonNegative(rng)
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0)
+        (mod, rng2)
+    else nonNegativeLessthan(n)(rng)
+    }
+{% endhighlight %}
+
+This works but kind of sucks because we have to pass the state around.
+
+We'd prefer to *not* have to do this...introducing `flatMap`.
+
+{% highlight scala %}
+def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+    val (x, next) = f(rng)
+    g(x)(next)
+}
+{% endhighlight %}
+
+Using `flatMap`, our `nonNegativeLessThan` becomes:
+
+{% highlight scala %}
+def nonNegativeLessThan(n:Int):Rand[Int] =
+    flatMap(nonNegative){ i =>
+        val mod = i % n
+        if (i + (n - 1) - mod >= 0) unit(mod)
+        else nonNegativeLessThan(n)
+    }
+{% endhighlight %}
+
+We can also use `flatMap` to implement `map` and `map2`:
+
+{% highlight scala %}
+def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s){a => unit(f(a))}
+
+def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => flatMap(rb)(b => unit(f(a,b))))
+{% endhighlight %}
+
+## A more general state action
+
+The functions we've looked at so far actually don't necessarily have anything to do
+*specifically* with random number generation. We can generalize them to allow us to use
+them for *any* state action.
+
+For example, look at the signature of `map` if we replace `Rand` with some generic `S`:
+
+{% highlight scala %}
+def map[S,A,B](a: S => (A,S))(f: A => B):S => (B,S)
+{% endhighlight %}
+
+We can define a type alias to make things a bit more readable:
+
+{% highlight scala %}
+type State[S,+A] = S => (A,S)
+{% endhighlight %}
+
+So our definition of `Rand` becomes:
+
+{% highlight scala %}
+type Rand[A] = State[[RNG,A]
+{% endhighlight %}
+
+Here's an implementation:
+
+{% highlight scala %}
+case class State[S,+A](run: S => (A, S)) {
+  def map[B](f: A => B): State[S, B] = flatMap(a => State.unit(f(a)))
+
+  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+    flatMap{a => sb.map { b => f(a, b) }}
+
+  def flatMap[B](f: A => State[S, B]): State[S, B] =
+    State{ (s:S) =>
+      //get the value of type A and next state B
+      val (a, s1) = run(s)
+      /* f(a) returns a function A => State[S,B]
+         so we need to evaluate the function to
+         get an actual State[S,B]
+       */
+      f(a).run(s1)
+    }
+}
+{% endhighlight %}
+
+## Purely functional imperative programming
+
+Using state action, we can achieve imperative-style programming, while retaining
+referential transparency.
+
+We can define two state actions:
+
+{% highlight scala %}
+def get[S]:State[S,S] = State(s => (s,s))
+
+def set[S](s:S):State[S,Unit] = State(_ => ((),s))
+{% endhighlight %}
+
+This allows us to write programs like this:
+
+{% highlight scala %}
+def modify[S](f: S => S):State[S,Unit] = for {
+    s <- get
+    _ <- set(f(s))
+    } yield()
+{% endhighlight %}
+
+This will get the current state and assign it to `s` and set the new state to be `f`
+applied to `s`.
+
 
