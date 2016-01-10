@@ -22,6 +22,12 @@ class RNGPropertySpec extends PropSpec with PropertyChecks with Matchers{
 			next should be >= 0
 		}
 	}
+    property("nonNegativeLessThan n must return positive integner in range for all seeds") {
+        forAll(longSeed, smallInteger) { (seed:Long, n:Int) =>
+          val (i, _) = nonNegativeLessThan(n)(Simple(seed))
+          i should (be < n and be >= 0)
+        }
+    }
 	property("double must return double between 0 and 1, not including 1") {
 		forAll { (seed: Long) =>
 			val (next, _)  = double(Simple(seed))

@@ -38,6 +38,14 @@ object RNG {
     case p => p
   }
 
+  def nonNegativeLessThan(n:Int):Rand[Int] =
+      flatMap(nonNegativeInt){ i =>
+          val mod = i % n
+          if (i + (n - 1) - mod >= 0) unit(mod)
+          else nonNegativeLessThan(n)
+      }
+
+
   def double(rng: RNG): (Double, RNG) = {
     val (i, nextState) = nonNegativeInt(rng)
     (i / Int.MaxValue.toDouble, nextState)
