@@ -75,7 +75,7 @@ Our "divide-and-conquer" implementation becomes:
 {% highlight scala %}
 def sum(ints:Seq[Int]):Par[Int] =
     if (ints.size <= 1)
-        ints.headOption getOrElse 0
+        Par.unit(ints.headOption getOrElse 0)
     else {
         val (l,r) = ints.splitAt(ints.length / 2)
         Par.map2(sum(l), sum(r))(_ + _)
@@ -83,3 +83,95 @@ def sum(ints:Seq[Int]):Par[Int] =
 {% endhighlight %}
 
 This gives us a `Par[Int]` that we can invoke `Par.get` on to evaluate.
+
+Let's look at what the trace would be for `sum(IndexedSeq(1,2,3,4))`:
+
+{% highlight console %}
+sum(IndexedSeq(1,2,3,4))
+
+map2(
+    sum(IndexedSeq(1,2)),
+    sum(IndexedSeq(3,4)))(_ + _)
+
+map2(
+    map2(
+        sum(IndexedSeq(1)),
+        sum(IndexedSeq(2)))(_ + _),
+    sum(IndexedSeq(3,4)))(_ + _)
+
+map2(
+    map2(
+        unit(1),
+        unit(2))(_ + _),
+    sum(IndexedSeq(3,4)))(_ + _)
+ 
+map2(
+    map2(
+        unit(1),
+        unit(2))(_ + _),
+    map2(
+        sum(IndexedSeq(3)),
+        sum(IndexedSeq(4)))(_ + )
+
+map2(
+    map2(
+        unit(1),
+        unit(2))(_ + _),
+    map2(
+        unit(3),
+        unit(4))(_ + _))(_ + _)
+{% endhighlight %}
+
+Because `map2` is evaluated stictly (left-to-right), we actually end up "expanding" the entire "left"
+side/branch of the computation completely before moving onto the "right" side/branch. Even
+if we evalutate things in parallel, we'd still end up beginning the left computation
+before the right computation is even constructed.
+
+We *could* keep `map2` strict but not actually execute the computation - basically
+constructing a data structure that *describes* the computation. We would then evaluate
+this "description". Problem is, this "description" will almost certainly require more
+space than the original list.
+
+Looks like we should make `map2` lazy and have it begin evaluating both sides in parallel.
+
+### Explicit forking
+
+It might not always be the case that we'll want to create a thread (for example) to
+perform a computation. Something like `map2(unit(1), unit(1))(_ + _)`, for example - it's
+probably not worth the trouble.
+
+We can invent a function to allow the programmer to explicitly control when forking
+is/isn't required.
+
+{% highlight scala %}
+def fork[A](a: => Par[A]):Par[A]
+{% endhighlight %}
+
+Then we can define `sum` as follows:
+{% highlight scala %}
+def sum(ints:Seq[Int]):Par[Int] =
+    if (ints.size <= 1)
+        Par.unit(ints.headOption getOrElse 0)
+    else {
+        val (l,r) = ints.splitAt(ints.length / 2)
+        Par.map2(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
+    }
+{% endhighlight %}
+
+...so in the unit case, we don't bother with forking, but we do in the case where there
+are more than (in this case) one Pars to compute.
+
+By introducing `fork`, we have a separation of concerns - combining the results of two
+parallel tasks (`map2`) and performing a computation asynchronously (that's `fork`).
+`map2` can be strict, and if the programmer wishes to perform some work asynchronously,
+they can do so by wrapping the work using `fork`.
+
+Introducing a `fork` function also means that the programmer can opt to make `unit` lazy
+by wrapping it in `fork`:
+
+{% highlight scala %}
+def unit[A](a:A):Par[A]
+def lazyUnit[A](a: => A):Par[A] = fork(unit(a))
+{% endhighlight %}
+
+
