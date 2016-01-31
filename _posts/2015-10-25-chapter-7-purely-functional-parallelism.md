@@ -243,3 +243,20 @@ def run[A](executor:ExecutorService)(p:Par[A]): Future[A] = p(executor)
 
 ...we return a `Future` that the caller can call `get` on, with a timeout if necessary, cancel, etc.
 
+Won't go into the details of the full implementation, but generally we'll implement our operators following a similar
+pattern:
+
+{% highlight scala %}
+def map2[A,B,C](pa:Par[A], pb:Par[B])(f:(A,B) => C):Par[C] =
+    (es:ExecutorService) => {
+        val af = pa(es)
+        val bf = pb(es)
+        UnitFuture(f(af.get, bf.get))
+    }
+}
+{% endhighlight %}
+
+...where `UnitFuture` is a function that wraps a constant value in a `Future`.
+
+An important thing to note is that `Future` isn't a purely functional interface. This is ok, as the users of our API
+don't have to deal with it directly -  as far as the "outside world" is concerned, the `Par` API is pure.
